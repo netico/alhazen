@@ -1,10 +1,14 @@
 {
-    "name": "analytics.js",
+    "name": "Analytics.js",
     "version": "0.0.1",
     "description": "Analytics Made Easy :)",
     "main": "app.js",
     "scripts": {
         "start": "node app.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/netico/ame.git"
     },
     "author": {
         "name": "netico",
@@ -15,8 +19,6 @@
         "body-parser": "^1.18.2",
         "ejs": "^2.5.7",
         "express": "^4.16.2",
-        "pg": "^7.4.3",
-        "pg-copy-streams": "^1.2.0",
-        "tedious": "^2.3.1"
+        "pg": "^7.4.3"
     }
 }
