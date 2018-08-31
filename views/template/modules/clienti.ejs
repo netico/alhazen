@@ -1,0 +1,70 @@
+<% include ../head.ejs %>
+    <% include ../navbar.ejs %>
+        <main role="main" class="container-fluid">
+            <div class="starter-template">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Clienti</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/reload/?module=clienti'">Ricarica dati</button>
+                            <button class="btn btn-sm btn-outline-secondary" id="btnExport">Esporta</button>
+                        </div>
+                    </div>
+                </div>
+
+                <script type="text/javascript" charset="utf-8">
+
+                    /*                     d3.dsv(";", "/clienti-local.csv").then(function (data) {
+                                            console.log(data);
+                    
+                                            var container = d3.select("body")
+                                                .append("table")
+                    
+                                                .selectAll("tr")
+                                                .data(data)
+                                                .append("tr")
+                    
+                                                .selectAll("td")
+                                                .data(function (d) { return d; })
+                                                .append("td")
+                                                .text(function (d) { return d; });
+                                        }); */
+
+                    var csvtotable = new CsvToTable({
+                        csvFile: "/clienti-local.csv"
+                    });
+                    csvtotable.run(function () {
+                        document.getElementById("CsvToTable").className = "table-bordered";
+                    })
+
+
+                    /*console.log("error")
+                    d3.csv("/clienti-local.csv", function (error, data) {
+
+                        if (error) {
+                            console.log(error);
+                        }
+
+                        console.log(data)
+
+                        /*var container = d3.select("body")
+                            .append("table")
+
+                            .selectAll("tr")
+                            .data(data)
+                            .append("tr")
+
+                            .selectAll("td")
+                            .data(function (d) { return d; })
+                            .append("td")
+                            .text(function (d) { return d; });
+                    });*/
+                </script>
+
+                <!-- PivotTable -->
+                <div id="output"></div>
+            </div>
+
+        </main>
+        <!-- /.container -->
+        <% include ../footer.ejs %>
