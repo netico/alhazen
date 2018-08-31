@@ -20,16 +20,24 @@ indent_mode=2
 [project]
 name=Analytics.js
 base_path=/home/netico/Documents/Projects/Analytics
+description=Analytics Made Easy
+file_patterns=
 
 [long line marker]
 long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=-1
+current_page=5
+FILE_NAME_0=266;Javascript;0;EUTF-8;1;1;0;%2Fhome%2Fnetico%2FDocuments%2FProjects%2FAnalytics%2Ftest.js;0;4
+FILE_NAME_1=506;Javascript;0;EUTF-8;1;1;0;%2Fhome%2Fnetico%2FDocuments%2FProjects%2FAnalytics%2Fapp.js;0;4
+FILE_NAME_2=0;None;0;EUTF-8;1;1;0;%2Fhome%2Fnetico%2FDocuments%2FProjects%2FAnalytics%2Fviews%2Ftemplate%2Fmodules%2Fhome.ejs;0;4
+FILE_NAME_3=181;Markdown;0;EUTF-8;1;1;0;%2Fhome%2Fnetico%2FDocuments%2FProjects%2FAnalytics%2FREADME.md;0;4
+FILE_NAME_4=0;None;0;EUTF-8;1;1;0;%2Fhome%2Fnetico%2FDocuments%2FProjects%2FAnalytics%2Fviews%2Ftemplate%2Fmodules%2Fclienti.ejs;0;4
+FILE_NAME_5=0;Javascript;0;EUTF-8;1;1;0;%2Fhome%2Fnetico%2FDocuments%2FProjects%2FAnalytics%2Fviews%2Fjs%2FCsvToTable.js;0;4
 
 [VTE]
-last_dir=/var/www/html/sweetguest
+last_dir=/home/netico/Documents/Projects/Analytics
 
 [debugger]
 target=

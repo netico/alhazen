@@ -1,25 +1,27 @@
 
 
-// Configurazione del server HTTP
+// Configuring the HTTP server
 server_port = 3000;
 server_host = 'localhost';
 // Database
 config = 'postgresql://netico:test@localhost:5432/development';
 /**********************************************************************/
 
-// Moduli node.js
+// node.js
 // Express http://expressjs.com/it/
 express = require('express');
-// Tedious
-//tedious_connection = require('tedious').Connection;
-//tedious_request = require('tedious').Request;
-
-// PostgreSQL
-var pg_client = require('pg').Client;
-
+// postgres-node
+pg_client = require('pg').Client;
 // EJS - http://ejs.co/
 ejs = require('ejs');
+
+
 /**********************************************************************/
+
+// Custom JavaScript
+
+/**********************************************************************/
+
 
 // App Express
 app = express();
@@ -33,15 +35,15 @@ server = app.listen(process.env.PORT || server_port, function () {
 });
 /**********************************************************************/
 
-// Routing Express
+// Routing
 app.get('/view', function (req, res) {
 
     parameter_module = req.query.module;
     query = '';
     switch (parameter_module) {
 
-        case 'clienti':
-            // Anagrafica clienti
+        case 'customers':
+            // customers
             query += 'SELECT * FROM customers LIMIT 100'
             module(res, parameter_module, query, app, app_path);
             break;
@@ -55,15 +57,15 @@ app.get('/', function (req, res) {
 
     res.redirect('/view/?module=home');
 });
-// Ricarica gli archivi da remoto e li copia in locale
+// Recharge archives remotely and copy them locally
 app.get('/reload', function (req, res) {
 
     parameter_module = req.query.module;
     switch (parameter_module) {
-        case 'clienti':
-            store_csv(app_path, 'clienti', function () {
+        case 'customers':
+            store_csv(app_path, 'customers', function () {
 
-                res.redirect('/view/?module=clienti');
+                res.redirect('/view/?module=customers');
             });
             break;
         default:
@@ -74,7 +76,7 @@ app.get('/reload', function (req, res) {
 /**********************************************************************/
 
 
-// Funzioni
+// Functions
 function json2array(json) {
     var result = [];
     var keys = Object.keys(json);
@@ -84,12 +86,12 @@ function json2array(json) {
     return result;
 }
 
-// Modulo
+// Module
 function module(res, archive, query, app, app_path) {
 
     // HTML
     res.render('template/modules/' + archive + '.ejs');
-    // Ricarica l'archivio da remoto
+    // Reload the archive remotely
     app.get('/' + archive + '-remote.csv', function (req, res) {
 
         get_csv(config, query, function (CSV) {
@@ -97,7 +99,7 @@ function module(res, archive, query, app, app_path) {
             res.send(new Buffer(CSV));
         });
     });
-    // Fornisce l'archivio locale in formato CSV
+    // Provides the local archive in CSV format
     app.get('/' + archive + '-local.csv', function (req, res) {
 
         res.header('Content-type: text/csv');
@@ -105,18 +107,16 @@ function module(res, archive, query, app, app_path) {
     });
 }
 
-// Esegue una query sul database remoto e formatta i risultati in 
-// formato CSV
-// Richiede un backend PostgreSQL
+// Perform a query on the remote database and format the results in
+// CSV format
+// Requires a PostgreSQL backend
 function get_csv(config, query, callback) {
 
     var client = new pg_client({
         connectionString: config
     });
 
-
     client.connect();
-
     client.query(query, function (err, res) {
 
         rows = res.rows;
@@ -124,7 +124,7 @@ function get_csv(config, query, callback) {
         c = 0;
         output = '';
 
-        // Intestazioni
+        // Headers
         csv_headers = '';
 
         csv_headers += 'Id;';
@@ -142,13 +142,13 @@ function get_csv(config, query, callback) {
             output += c + ';';
             row.forEach(function (column) {
                 if (isNaN(column)) {
-                    // Stringa
+                    // String
                     csv_row = String(column);
                     csv_row = csv_row.trim();
                     csv_row = csv_row.replace(';', ',');
                     csv_row = csv_row + ';';
                 } else {
-                    // Numero
+                    // Number
                     csv_row = column + 0;
                     csv_row = csv_row.toString().replace(
                         '.', ','
@@ -165,7 +165,7 @@ function get_csv(config, query, callback) {
 
 };
 
-// Copia in locale il CSV remoto
+// Copy the remote CSV locally
 function store_csv(app_path, archive, callback) {
 
     http = require('http');
@@ -179,16 +179,5 @@ function store_csv(app_path, archive, callback) {
         callback(null);
     });
 }
-
-// TODO
-// 
-/*function make_session_id() {
-    var text = '';
-    var possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 15; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
-}*/
 
 /**********************************************************************/
