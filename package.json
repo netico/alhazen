@@ -1,5 +1,5 @@
 {
-    "name": "analytics",
+    "name": "analytics.js",
     "version": "0.0.1",
     "description": "Analytics Made Easy :)",
     "main": "app.js",
@@ -7,10 +7,10 @@
         "start": "node app.js"
     },
     "author": {
-        "name": "EB",
-        "email": "pr@eurob.it"
+        "name": "netico",
+        "email": "netico.42@gmail.com"
     },
-    "license": "SEE LICENSE IN README.TXT",
+    "license": "SEE LICENSE IN LICENSE",
     "dependencies": {
         "body-parser": "^1.18.2",
         "ejs": "^2.5.7",
