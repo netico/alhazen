@@ -1,21 +1,18 @@
 
 
-// Configuring the HTTP server
-server_port = 3000;
-server_host = 'localhost';
-// Database
-config = 'postgresql://netico:test@localhost:5432/development';
+conf = require('./conf')
+console.log(conf.modules['orders'].title)
 
 /**********************************************************************/
 
 // node.js
-express = require('express');
-pg_client = require('pg').Client;
-ejs = require('ejs');
-csvtojson_converter = require("csvtojson").Converter;
+express = require('express')
+pg_client = require('pg').Client
+ejs = require('ejs')
+csvtojson_converter = require("csvtojson").Converter
 
-fs = require('fs');
-http = require('http');
+fs = require('fs')
+http = require('http')
 
 /**********************************************************************/
 
@@ -25,7 +22,7 @@ path = require('path');
 app_path = path.join(__dirname) + '/';
 app.use('/views', express.static(app_path + 'views'));
 // HTTP Server
-server = app.listen(process.env.PORT || server_port, function () {
+server = app.listen(process.env.PORT || conf.server_port, function () {
     port = server.address().port;
     console.log('Server started on port', port);
 });
@@ -35,27 +32,21 @@ server = app.listen(process.env.PORT || server_port, function () {
 app.get('/view', function (req, res) {
 
     parameter_module = req.query.module;
-    query = '';
     switch (parameter_module) {
 
         case 'customers':
-            query += 'SELECT firstname as "First name", lastname as "Last name", city as "City", country as "Country", age as "Age", income as "Income" FROM customers'
-            module(res, parameter_module, query, app, app_path)
-            break;
-        case 'orders':
-			query += 'select o.orderid as "Number", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid'
-			
-			module(res, parameter_module, query, app, app_path)
+            query = 'select firstname as "First name", lastname as "Last name", city as "City", country as "Country", age as "Age", income as "Income" FROM customers'
             break
-        default:
-            // HTML
-            res.render('template/modules/home.ejs')
+        case 'orders':
+			query = 'select o.orderid as "Number", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid'		
+            break
     }
+    module(res, parameter_module, query, app, app_path)
 });
 // Home
 app.get('/', function (req, res) {
 
-    res.redirect('/view/?module=home');
+    res.redirect('/view/?module=orders');
 });
 // Reload archives remotely and copy them locally
 app.get('/reload', function (req, res) {
@@ -98,7 +89,7 @@ function module(res, archive, query, app, app_path) {
     // Reload the archive remotely
     app.get('/' + archive + '-remote.csv', function (req, res) {
 
-        get_csv(config, query, function (CSV) {
+        get_csv(conf.connection_string, query, function (CSV) {
             res.header('Content-type: text/csv');
             res.send(new Buffer(CSV));
         });
@@ -175,7 +166,6 @@ function get_csv(config, query, callback) {
                     csv_item = column + 0
                     csv_item = csv_item.toString().replace('.', ',')
                 }
-                //console.log(csv_item)
 				return csv_item
             })
             
@@ -233,7 +223,7 @@ function get_json_headers (csv_file, callback) {
 function store_csv(app_path, archive, callback) {
 
     csv = app_path + 'db/' + archive + '.csv';
-    remote_csv = 'http://' + server_host + ':' + server_port + '/';
+    remote_csv = 'http://' + conf.server_host + ':' + conf.server_port + '/';
     remote_csv += archive + '-remote.csv';
     file = fs.createWriteStream(csv);
     store = http.get(remote_csv, function (response) {
