@@ -12,4 +12,8 @@ node-csvtojson - https://github.com/Keyang/node-csvtojson
 ## Setup
 npm install
 
+npm run start 
 
+or
+
+npm run dev 
