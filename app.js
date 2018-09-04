@@ -5,23 +5,16 @@ server_port = 3000;
 server_host = 'localhost';
 // Database
 config = 'postgresql://netico:test@localhost:5432/development';
+
 /**********************************************************************/
 
 // node.js
-// Express http://expressjs.com/it/
 express = require('express');
-// postgres-node
 pg_client = require('pg').Client;
-// EJS - http://ejs.co/
 ejs = require('ejs');
 
 
 /**********************************************************************/
-
-// Custom JavaScript
-
-/**********************************************************************/
-
 
 // App Express
 app = express();
@@ -57,7 +50,7 @@ app.get('/', function (req, res) {
 
     res.redirect('/view/?module=home');
 });
-// Recharge archives remotely and copy them locally
+// Reload archives remotely and copy them locally
 app.get('/reload', function (req, res) {
 
     parameter_module = req.query.module;
@@ -105,6 +98,16 @@ function module(res, archive, query, app, app_path) {
         res.header('Content-type: text/csv');
         res.sendFile(app_path + 'db/' + archive + '.csv');
     });
+    
+    // Provides the local archive in JSON format
+    app.get('/' + archive + '-local.json', function (req, res) {
+
+        get_json(app_path + 'db/' + archive + '.csv', function (JSON) {
+            res.header('Content-type: text/json');
+            res.send(JSON);
+        });
+        
+    });
 }
 
 // Perform a query on the remote database and format the results in
@@ -113,7 +116,7 @@ function module(res, archive, query, app, app_path) {
 function get_csv(config, query, callback) {
 
     var client = new pg_client({
-        connectionString: config
+		connectionString: config
     });
 
     client.connect();
@@ -142,7 +145,7 @@ function get_csv(config, query, callback) {
             output += c + ';';
             row.forEach(function (column) {
                 if (isNaN(column)) {
-                    // String
+                    // String or something else
                     csv_row = String(column);
                     csv_row = csv_row.trim();
                     csv_row = csv_row.replace(';', ',');
@@ -165,8 +168,45 @@ function get_csv(config, query, callback) {
 
 };
 
+function get_json (csv_file, callback) {
+	
+	var Converter = require("csvtojson").Converter;
+	var converter = new Converter({
+		delimiter: ';'
+	});
+	
+	// call the fromFile function which takes in the path to your 
+	// csv file as well as a callback function
+	console.log(csv_file);
+
+	converter.fromFile(csv_file).then ( function (result) 
+	{
+		
+		console.log(csv_file);
+		// if an error has occured then handle it
+		/*if(err){
+			console.log("An Error Has Occured");
+			console.log(err);  
+		} */
+		// create a variable called json and store
+		// the result of the conversion
+		var json = result;
+		
+		// log our json to verify it has worked
+		//console.log(json);
+		callback(json);
+	})
+	.catch ( function (err) {
+		if(err){
+			console.log("An Error Has Occured");
+			console.log(err);  
+		}
+	});
+}
+
 // Copy the remote CSV locally
 function store_csv(app_path, archive, callback) {
+
 
     http = require('http');
     fs = require('fs');

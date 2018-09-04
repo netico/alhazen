@@ -1,7 +1,7 @@
 # Analytics Made Easy
 
 ## node.js
-Express - http://expressjs.com/it/
+Express - http://expressjs.com/
 
 EJS - http://ejs.co/
 
