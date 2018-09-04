@@ -6,3 +6,7 @@ body {
     padding: 0.8rem;
     text-align: left;
 }
+
+.h2 {
+    text-transform: capitalize;
+}

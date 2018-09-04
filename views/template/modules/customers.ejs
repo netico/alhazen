@@ -3,31 +3,41 @@
         <main role="main" class="container-fluid">
             <div class="starter-template">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Clienti</h1>
+
+                    <h1 class="h2"></h1>
+                    <script type="text/javascript" charset="utf-8">
+						var urlParams = new URLSearchParams(window.location.search);
+						var module = urlParams.get('module');
+						$('.h2').html(module);
+					</script>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group mr-2">
-                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/reload/?module=customers'">Ricarica dati</button>
-                            <button class="btn btn-sm btn-outline-secondary" id="btnExport">Esporta</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/reload/?module=customers'">Reload data</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/customers-local.csv'">Download in CSV format</button>
                         </div>
                     </div>
                 </div>
 
 
                 <div>
-                <table  id="output"></table>
+                <table  id="output" class="table table-striped table-bordered" style="width:100%"></table>
                 </div>
                 <script type="text/javascript" charset="utf-8">
-                $('#output').DataTable( {
-					ajax: '/customers-local.json',
-					columns: [
-						{ 
-							data: "customerid",
-							title: "Customer ID" 
-						},
-						{ data: "firstname" },
-						{ data: "lastname" }
-					]
-				});
+				
+				jQuery.ajax({
+					type: 'GET',
+					dataType: 'json',
+					url: '/customers-headers-local.json',
+					success: function (columns) {
+						$('#output').DataTable( {
+							ajax: '/customers-local.json',
+							columns: columns
+						})
+					},
+					error: function (err) {
+						console.log(err)
+					}
+				})
                 </script>
             
             </div>

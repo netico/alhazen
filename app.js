@@ -14,6 +14,8 @@ pg_client = require('pg').Client;
 ejs = require('ejs');
 csvtojson_converter = require("csvtojson").Converter;
 
+fs = require('fs');
+http = require('http');
 
 /**********************************************************************/
 
@@ -25,7 +27,7 @@ app.use('/views', express.static(app_path + 'views'));
 // HTTP Server
 server = app.listen(process.env.PORT || server_port, function () {
     port = server.address().port;
-    console.log('The server started on port', port);
+    console.log('Server started on port', port);
 });
 /**********************************************************************/
 
@@ -37,13 +39,17 @@ app.get('/view', function (req, res) {
     switch (parameter_module) {
 
         case 'customers':
-            // customers
-            query += 'SELECT * FROM customers LIMIT 100000'
-            module(res, parameter_module, query, app, app_path);
+            query += 'SELECT firstname as "First name", lastname as "Last name", city as "City", country as "Country", age as "Age", income as "Income" FROM customers'
+            module(res, parameter_module, query, app, app_path)
             break;
+        case 'orders':
+			query += 'select o.orderid as "Number", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid'
+			
+			module(res, parameter_module, query, app, app_path)
+            break
         default:
             // HTML
-            res.render('template/modules/home.ejs');
+            res.render('template/modules/home.ejs')
     }
 });
 // Home
@@ -58,8 +64,12 @@ app.get('/reload', function (req, res) {
     switch (parameter_module) {
         case 'customers':
             store_csv(app_path, 'customers', function () {
-
                 res.redirect('/view/?module=customers');
+            });
+            break;
+        case 'orders':
+            store_csv(app_path, 'orders', function () {
+                res.redirect('/view/?module=orders');
             });
             break;
         default:
@@ -106,8 +116,15 @@ function module(res, archive, query, app, app_path) {
         get_json(app_path + 'db/' + archive + '.csv', function (JSON) {
             res.header('Content-type: text/json');
             res.json({data: JSON});
+        });     
+    });
+    
+    app.get('/' + archive + '-headers-local.json', function (req, res) {
+
+        get_json_headers(app_path + 'db/' + archive + '.csv', function (JSON) {
+            res.header('Content-type: text/json');
+            res.json(JSON);
         });
-        
     });
 }
 
@@ -123,20 +140,21 @@ function get_csv(config, query, callback) {
     client.connect();
     client.query(query, function (err, res) {
 
+		//console.log(err)
         rows = res.rows;
         fields = json2array(res.fields);
         c = 0;
         output = '';
 
         // Headers
-        csv_headers = '';
+        csv_headers = new Array();
 
-        csv_headers += 'Id;';
+        csv_headers.push ('#')
         fields.forEach(function (column) {
 
-            csv_headers += String(column.name) + ';';
+            csv_headers.push (String(column.name))
         });
-        output += csv_headers + '\r\n';
+        output += csv_headers.join (';') + '\r\n';
 
 
         rows.forEach(function (json_row) {
@@ -144,22 +162,24 @@ function get_csv(config, query, callback) {
             row = json2array(json_row)
 
             output += c + ';';
-            row.forEach(function (column) {
+            
+            row = row.map (function (column) {
                 if (isNaN(column)) {
                     // String or something else
-                    csv_row = String(column);
-                    csv_row = csv_row.trim();
-                    csv_row = csv_row.replace(';', ',');
-                    csv_row = csv_row + ';';
+                    csv_item = String(column)
+                    csv_item = csv_item.trim()
+                    csv_item = csv_item.replace(';', ',')
+
                 } else {
                     // Number
-                    csv_row = column + 0;
-                    csv_row = csv_row.toString().replace(
-                        '.', ','
-                    ) + ';';
+                    csv_item = column + 0
+                    csv_item = csv_item.toString().replace('.', ',')
                 }
-                output += csv_row;
-            });
+                //console.log(csv_item)
+				return csv_item
+            })
+            
+            output += row.join (';')
             output += '\r\n';
         });
         callback(output);
@@ -177,7 +197,7 @@ function get_json (csv_file, callback) {
 	
 	converter.fromFile(csv_file).then ( function (result) 
 	{
-		//var json = '{ data: ' + result + '}';
+
 		var json = result
 		callback(json);
 	})
@@ -189,11 +209,29 @@ function get_json (csv_file, callback) {
 	});
 }
 
+function get_json_headers (csv_file, callback) {
+	
+	fs.readFile(csv_file, 'utf8', function (err, data) {
+		if (err) {
+			return console.log(err);
+		}
+		lines = data.split(/\r\n|\r|\n/)
+		
+		// creates columns by splitting first line of csv
+		columns = lines[0].split(';')
+		callback (columns.map (function (item) {
+			return {
+				data: item,
+				title: item
+			}
+		}))
+	})
+
+}
+
 // Copy the remote CSV locally
 function store_csv(app_path, archive, callback) {
 
-    http = require('http');
-    fs = require('fs');
     csv = app_path + 'db/' + archive + '.csv';
     remote_csv = 'http://' + server_host + ':' + server_port + '/';
     remote_csv += archive + '-remote.csv';
