@@ -1,0 +1,47 @@
+<% include ../head.ejs %>
+    <% include ../navbar.ejs %>
+        <main role="main" class="container-fluid">
+            <div class="starter-template">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+
+                    <h1 class="h2"></h1>
+                    <script type="text/javascript" charset="utf-8">
+						var urlParams = new URLSearchParams(window.location.search);
+						var module = urlParams.get('module');
+						$('.h2').html(module);
+					</script>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/reload/?module=orders'">Reload data</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/orders-local.csv'">Download in CSV format</button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div>
+                <table  id="output" class="table table-striped table-bordered" style="width:100%"></table>
+                </div>
+                <script type="text/javascript" charset="utf-8">
+				
+				jQuery.ajax({
+					type: 'GET',
+					dataType: 'json',
+					url: '/orders-headers-local.json',
+					success: function (columns) {
+						$('#output').DataTable( {
+							ajax: '/orders-local.json',
+							columns: columns
+						})
+					},
+					error: function (err) {
+						console.log(err)
+					}
+				})
+                </script>
+            
+            </div>
+
+        </main>
+        <!-- /.container -->
+        <% include ../footer.ejs %>
