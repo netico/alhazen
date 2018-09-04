@@ -12,57 +12,24 @@
                     </div>
                 </div>
 
+
+                <div>
+                <table  id="output"></table>
+                </div>
                 <script type="text/javascript" charset="utf-8">
-
-                    /*                     d3.dsv(";", "/clienti-local.csv").then(function (data) {
-                                            console.log(data);
-                    
-                                            var container = d3.select("body")
-                                                .append("table")
-                    
-                                                .selectAll("tr")
-                                                .data(data)
-                                                .append("tr")
-                    
-                                                .selectAll("td")
-                                                .data(function (d) { return d; })
-                                                .append("td")
-                                                .text(function (d) { return d; });
-                                        }); */
-
-                    var csvtotable = new csvtotable({
-                        csvFile: "/clienti-local.csv"
-                    });
-                    csvtotable.run(function () {
-                        document.getElementById("csvtotable").className = "table-bordered";
-                    })
-
-
-                    /*console.log("error")
-                    d3.csv("/clienti-local.csv", function (error, data) {
-
-                        if (error) {
-                            console.log(error);
-                        }
-
-                        console.log(data)
-
-                        /*var container = d3.select("body")
-                            .append("table")
-
-                            .selectAll("tr")
-                            .data(data)
-                            .append("tr")
-
-                            .selectAll("td")
-                            .data(function (d) { return d; })
-                            .append("td")
-                            .text(function (d) { return d; });
-                    });*/
+                $('#output').DataTable( {
+					ajax: '/customers-local.json',
+					columns: [
+						{ 
+							data: "customerid",
+							title: "Customer ID" 
+						},
+						{ data: "firstname" },
+						{ data: "lastname" }
+					]
+				});
                 </script>
-
-                <!-- PivotTable -->
-                <div id="output"></div>
+            
             </div>
 
         </main>

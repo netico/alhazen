@@ -12,6 +12,7 @@ config = 'postgresql://netico:test@localhost:5432/development';
 express = require('express');
 pg_client = require('pg').Client;
 ejs = require('ejs');
+csvtojson_converter = require("csvtojson").Converter;
 
 
 /**********************************************************************/
@@ -24,7 +25,7 @@ app.use('/views', express.static(app_path + 'views'));
 // HTTP Server
 server = app.listen(process.env.PORT || server_port, function () {
     port = server.address().port;
-    console.log('Il server è partito sulla porta', port);
+    console.log('The server started on port', port);
 });
 /**********************************************************************/
 
@@ -37,7 +38,7 @@ app.get('/view', function (req, res) {
 
         case 'customers':
             // customers
-            query += 'SELECT * FROM customers LIMIT 100'
+            query += 'SELECT * FROM customers LIMIT 100000'
             module(res, parameter_module, query, app, app_path);
             break;
         default:
@@ -104,7 +105,7 @@ function module(res, archive, query, app, app_path) {
 
         get_json(app_path + 'db/' + archive + '.csv', function (JSON) {
             res.header('Content-type: text/json');
-            res.send(JSON);
+            res.json({data: JSON});
         });
         
     });
@@ -170,35 +171,19 @@ function get_csv(config, query, callback) {
 
 function get_json (csv_file, callback) {
 	
-	var Converter = require("csvtojson").Converter;
-	var converter = new Converter({
+	var converter = new csvtojson_converter({
 		delimiter: ';'
 	});
 	
-	// call the fromFile function which takes in the path to your 
-	// csv file as well as a callback function
-	console.log(csv_file);
-
 	converter.fromFile(csv_file).then ( function (result) 
 	{
-		
-		console.log(csv_file);
-		// if an error has occured then handle it
-		/*if(err){
-			console.log("An Error Has Occured");
-			console.log(err);  
-		} */
-		// create a variable called json and store
-		// the result of the conversion
-		var json = result;
-		
-		// log our json to verify it has worked
-		//console.log(json);
+		//var json = '{ data: ' + result + '}';
+		var json = result
 		callback(json);
 	})
 	.catch ( function (err) {
 		if(err){
-			console.log("An Error Has Occured");
+			console.log("An error has occured");
 			console.log(err);  
 		}
 	});
@@ -206,7 +191,6 @@ function get_json (csv_file, callback) {
 
 // Copy the remote CSV locally
 function store_csv(app_path, archive, callback) {
-
 
     http = require('http');
     fs = require('fs');

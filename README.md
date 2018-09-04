@@ -7,6 +7,8 @@ EJS - http://ejs.co/
 
 node-postgres - https://node-postgres.com/
 
+node-csvtojson - https://github.com/Keyang/node-csvtojson
+
 ## Setup
 npm install
 
