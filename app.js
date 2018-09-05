@@ -1,18 +1,18 @@
 
 
-conf = require('./conf')
-console.log(conf.modules['orders'].title)
+conf = require('./conf');
+//console.log(conf.modules['orders'].title);
 
 /**********************************************************************/
 
 // node.js
-express = require('express')
-pg_client = require('pg').Client
-ejs = require('ejs')
-csvtojson_converter = require("csvtojson").Converter
+express = require('express');
+pg_client = require('pg').Client;
+ejs = require('ejs');
+csvtojson_converter = require('csvtojson').Converter;
 
-fs = require('fs')
-http = require('http')
+fs = require('fs');
+http = require('http');
 
 /**********************************************************************/
 
@@ -35,13 +35,13 @@ app.get('/view', function (req, res) {
     switch (parameter_module) {
 
         case 'customers':
-            query = 'select firstname as "First name", lastname as "Last name", city as "City", country as "Country", age as "Age", income as "Income" FROM customers'
-            break
+            query = 'select firstname as "First name", lastname as "Last name", city as "City", country as "Country", age as "Age", income as "Income" FROM customers';
+            break;
         case 'orders':
-			query = 'select o.orderid as "Number", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid'		
-            break
+			query = 'select o.orderid as "Number", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid';		
+            break;
     }
-    module(res, parameter_module, query, app, app_path)
+    module(res, parameter_module, query, app, app_path);
 });
 // Home
 app.get('/', function (req, res) {
@@ -138,38 +138,38 @@ function get_csv(config, query, callback) {
         output = '';
 
         // Headers
-        csv_headers = new Array();
+        csv_headers = [];
 
-        csv_headers.push ('#')
+        csv_headers.push ('#');
         fields.forEach(function (column) {
 
-            csv_headers.push (String(column.name))
+            csv_headers.push (String(column.name));
         });
         output += csv_headers.join (';') + '\r\n';
 
 
         rows.forEach(function (json_row) {
-            c++
-            row = json2array(json_row)
+            c++;
+            row = json2array(json_row);
 
             output += c + ';';
             
             row = row.map (function (column) {
                 if (isNaN(column)) {
                     // String or something else
-                    csv_item = String(column)
-                    csv_item = csv_item.trim()
-                    csv_item = csv_item.replace(';', ',')
+                    csv_item = String(column);
+                    csv_item = csv_item.trim();
+                    csv_item = csv_item.replace(';', ',');
 
                 } else {
                     // Number
-                    csv_item = column + 0
-                    csv_item = csv_item.toString().replace('.', ',')
+                    csv_item = column + 0;
+                    csv_item = csv_item.toString().replace('.', ',');
                 }
-				return csv_item
-            })
+				return csv_item;
+            });
             
-            output += row.join (';')
+            output += row.join (';');
             output += '\r\n';
         });
         callback(output);
@@ -177,7 +177,7 @@ function get_csv(config, query, callback) {
         client.end();
     });
 
-};
+}
 
 function get_json (csv_file, callback) {
 	
@@ -188,7 +188,7 @@ function get_json (csv_file, callback) {
 	converter.fromFile(csv_file).then ( function (result) 
 	{
 
-		var json = result
+		var json = result;
 		callback(json);
 	})
 	.catch ( function (err) {
@@ -205,17 +205,17 @@ function get_json_headers (csv_file, callback) {
 		if (err) {
 			return console.log(err);
 		}
-		lines = data.split(/\r\n|\r|\n/)
+		lines = data.split(/\r\n|\r|\n/);
 		
 		// creates columns by splitting first line of csv
-		columns = lines[0].split(';')
+		columns = lines[0].split(';');
 		callback (columns.map (function (item) {
 			return {
 				data: item,
 				title: item
-			}
-		}))
-	})
+			};
+		}));
+	});
 
 }
 
