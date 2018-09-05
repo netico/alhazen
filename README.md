@@ -11,7 +11,7 @@ node-csvtojson - https://github.com/Keyang/node-csvtojson
 
 DataTables - https://datatables.net/
 
-Chart.js http://www.chartjs.org/
+Chart.js - http://www.chartjs.org/
 
 ## Setup
 npm install
