@@ -1,0 +1,54 @@
+<% include ../head.ejs %>
+    <% include ../navbar.ejs %>
+        <main role="main" class="container-fluid">
+            <div class="starter-template">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+
+                    <h1 class="h2"></h1>
+                    <script type="text/javascript" charset="utf-8">
+						var urlParams = new URLSearchParams(window.location.search);
+						var module = urlParams.get('module');
+						$('.h2').html(module);
+					</script>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group mr-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/reload/?module=orders-trend-chart'">Reload data</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/orders-local.csv'">Download in CSV format</button>
+                        </div>
+                    </div>
+                </div>
+
+				<canvas id="myChart"></canvas>
+				<script>
+				Chart.defaults.global.legend.display = false;
+
+				var ctx = document.getElementById("myChart");
+
+				ctx.height = 120;
+				var myChart = new Chart(ctx, {
+					type: 'bar',
+					data: {
+						labels: ["1", "2", "3", "4", "5", "6", "7"],
+						datasets: [{
+							label: 'Example',
+							data: [12, 14, 3, 5, 2, 3, 80],
+							backgroundColor: 'rgba(54, 162, 235, 0.2)'
+						}]
+					},
+					options: {
+						scales: {
+							yAxes: [{
+								ticks: {
+									beginAtZero:true
+								}
+							}]
+						}
+					}
+				});
+				</script>
+      
+            </div>
+
+        </main>
+        <!-- /.container -->
+        <% include ../footer.ejs %>

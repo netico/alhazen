@@ -1,6 +1,6 @@
 # Analytics Made Easy
 
-## node.js
+## Requirements
 Express - http://expressjs.com/
 
 EJS - http://ejs.co/
@@ -8,6 +8,10 @@ EJS - http://ejs.co/
 node-postgres - https://node-postgres.com/
 
 node-csvtojson - https://github.com/Keyang/node-csvtojson
+
+DataTables - https://datatables.net/
+
+Charts.js http://www.chartjs.org/
 
 ## Setup
 npm install
