@@ -40,6 +40,9 @@ app.get('/view', function (req, res) {
         case 'orders':
 			query = 'select o.orderid as "Number", date_part(\'year\', o.orderdate) as "Year", date_part(\'month\', o.orderdate) as "Month", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid';		
             break;
+        case 'orders-trend-chart':
+			query = 'select sum(o.totalamount) as "Total amount" , concat(date_part(\'year\', o.orderdate),\'/\', to_char(o.orderdate, \'MM\')) as "Month" from orders o left join customers c on o.customerid = c.customerid group by date_part(\'year\', o.orderdate), to_char(o.orderdate, \'MM\')';
+			break;
     }
     module(res, parameter_module, query, app, app_path);
 });
@@ -117,6 +120,15 @@ function module(res, archive, query, app, app_path) {
             res.json(JSON);
         });
     });
+    
+    app.get('/' + archive + '-bar-chart-local.json', function (req, res) {
+
+        get_json_bar_chart(app_path + 'db/' + archive + '.csv', function (JSON) {
+            res.header('Content-type: text/json');
+            res.json(JSON);
+        });
+    });
+    
 }
 
 // Perform a query on the remote database and format the results in
@@ -216,6 +228,10 @@ function get_json_headers (csv_file, callback) {
 			};
 		}));
 	});
+}
+
+function get_json_bar_chart () {
+	
 
 }
 
