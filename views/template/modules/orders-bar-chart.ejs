@@ -18,24 +18,39 @@
                     </div>
                 </div>
 
-				<canvas id="myChart"></canvas>
+				<canvas id="output"></canvas>
 				<script>
-				Chart.defaults.global.legend.display = false;
+					
+					
+				jQuery.ajax({
+					type: 'GET',
+					dataType: 'json',
+					url: '/orders-bar-chart-local.json',
+					success: function (output) {
+					
+						Chart.defaults.global.legend.display = false;
 
-				var ctx = document.getElementById("myChart");
+						var ctx = document.getElementById("output");
 
-				ctx.height = 140;
-				var myChart = new Chart(ctx, {
-					type: 'bar',
-					data: {
-						labels: ["1", "2", "3", "4", "5", "6", "7"],
-						datasets: [{
-							label: 'Example',
-							data: [12, 14, 3, 5, 2, 3, 80],
-							backgroundColor: 'rgba(54, 162, 235, 0.2)'
-						}]
+						ctx.height = 120;
+						var myChart = new Chart(ctx, {
+							type: 'bar',
+							data: {
+								labels: output.k,
+								datasets: [{
+									label: 'Example',
+									data: output.v,
+									backgroundColor: 'rgba(54, 162, 235, 0.2)'
+								}]
+							},
+						});
 					},
-				});
+					error: function (err) {
+						console.log(err)
+					}
+				})	
+					
+
 				</script>
       
             </div>

@@ -245,7 +245,7 @@ function get_json_bar_chart (csv_file, callback) {
 	{
 		var json = result.reduce (function (a, b) {
 			
-			a.v.push(b['Total amount']);
+			a.v.push(b['Total amount'].replace(',', '.'));
 			a.k.push(b.Month);
 			return a;
 			
