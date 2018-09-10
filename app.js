@@ -1,5 +1,5 @@
 
-
+library = require('./library');
 conf = require('./conf');
 //console.log(conf.modules['orders'].title);
 
@@ -46,28 +46,30 @@ app.get('/view', function (req, res) {
     }
     module(res, parameter_module, query, app, app_path);
 });
+
 // Home
 app.get('/', function (req, res) {
 
     res.redirect('/view/?module=orders');
 });
+
 // Reload archives remotely and copy them locally
 app.get('/reload', function (req, res) {
 
     parameter_module = req.query.module;
     switch (parameter_module) {
         case 'customers':
-            store_csv(app_path, 'customers', function () {
+            library.store_csv(app_path, 'customers', function () {
                 res.redirect('/view/?module=customers');
             });
             break;
         case 'orders':
-            store_csv(app_path, 'orders', function () {
+            library.store_csv(app_path, 'orders', function () {
                 res.redirect('/view/?module=orders');
             });
             break;
        case 'orders-bar-chart':
-            store_csv(app_path, 'orders-bar-chart', function () {
+            library.store_csv(app_path, 'orders-bar-chart', function () {
                 res.redirect('/view/?module=orders-bar-chart');
             });
             break;
@@ -78,17 +80,6 @@ app.get('/reload', function (req, res) {
 });
 /**********************************************************************/
 
-
-// Functions
-function json2array(json) {
-    var result = [];
-    var keys = Object.keys(json);
-    keys.forEach(function (key) {
-        result.push(json[key]);
-    });
-    return result;
-}
-
 // Module
 function module(res, archive, query, app, app_path) {
 
@@ -97,11 +88,12 @@ function module(res, archive, query, app, app_path) {
     // Reload the archive remotely
     app.get('/' + archive + '-remote.csv', function (req, res) {
 
-        get_csv(conf.connection_string, query, function (CSV) {
+        library.get_csv (conf.connection_string, query, function (CSV) {
             res.header('Content-type: text/csv');
             res.send(new Buffer(CSV));
         });
     });
+    
     // Provides the local archive in CSV format
     app.get('/' + archive + '-local.csv', function (req, res) {
 
@@ -112,7 +104,7 @@ function module(res, archive, query, app, app_path) {
     // Provides the local archive in JSON format
     app.get('/' + archive + '-local.json', function (req, res) {
 
-        get_json(app_path + 'db/' + archive + '.csv', function (JSON) {
+        library.get_json(app_path + 'db/' + archive + '.csv', function (JSON) {
             res.header('Content-type: text/json');
             res.json({data: JSON});
         });     
@@ -120,7 +112,7 @@ function module(res, archive, query, app, app_path) {
     
     app.get('/' + archive + '-headers-local.json', function (req, res) {
 
-        get_json_headers(app_path + 'db/' + archive + '.csv', function (JSON) {
+        library.get_json_headers(app_path + 'db/' + archive + '.csv', function (JSON) {
             res.header('Content-type: text/json');
             res.json(JSON);
         });
@@ -128,160 +120,12 @@ function module(res, archive, query, app, app_path) {
     
     app.get('/' + archive + '-bar-chart-local.json', function (req, res) {
 
-        get_json_bar_chart(app_path + 'db/' + archive + '-bar-chart.csv', function (JSON) {
+        library.get_json_bar_chart(app_path + 'db/' + archive + '-bar-chart.csv', function (JSON) {
             res.header('Content-type: text/json');
             res.json(JSON);
         });
     });
     
-}
-
-// Perform a query on the remote database and format the results in
-// CSV format
-// Requires a PostgreSQL backend
-function get_csv(config, query, callback) {
-
-    var client = new pg_client({
-		connectionString: config
-    });
-
-    client.connect();
-    client.query(query, function (err, res) {
-
-		//console.log(err)
-        rows = res.rows;
-        fields = json2array(res.fields);
-        c = 0;
-        output = '';
-
-        // Headers
-        csv_headers = [];
-
-        csv_headers.push ('#');
-        fields.forEach(function (column) {
-
-            csv_headers.push (String(column.name));
-        });
-        output += csv_headers.join (';') + '\r\n';
-
-
-        rows.forEach(function (json_row) {
-            c++;
-            row = json2array(json_row);
-
-            output += c + ';';
-            
-            row = row.map (function (column) {
-                if (isNaN(column)) {
-                    // String or something else
-                    csv_item = String(column);
-                    csv_item = csv_item.trim();
-                    csv_item = csv_item.replace(';', ',');
-
-                } else {
-                    // Number
-                    csv_item = column + 0;
-                    csv_item = csv_item.toString().replace('.', ',');
-                }
-				return csv_item;
-            });
-            
-            output += row.join (';');
-            output += '\r\n';
-        });
-        callback(output);
-
-        client.end();
-    });
-
-}
-
-function get_json (csv_file, callback) {
-	
-	var converter = new csvtojson_converter({
-		delimiter: ';'
-	});
-	
-	converter.fromFile(csv_file).then ( function (result) 
-	{
-
-		var json = result;
-		callback(json);
-	})
-	.catch ( function (err) {
-		if(err){
-			console.log("An error has occured");
-			console.log(err);  
-		}
-	});
-}
-
-function get_json_headers (csv_file, callback) {
-	
-	fs.readFile(csv_file, 'utf8', function (err, data) {
-		if (err) {
-			return console.log(err);
-		}
-		lines = data.split(/\r\n|\r|\n/);
-		
-		// creates columns by splitting first line of csv
-		columns = lines[0].split(';');
-		callback (columns.map (function (item) {
-			return {
-				data: item,
-				title: item
-			};
-		}));
-	});
-}
-
-function get_json_bar_chart (csv_file, callback) {
-	
-	var converter = new csvtojson_converter({
-		delimiter: ';'
-	});
-	
-	converter.fromFile(csv_file).then ( function (result) 
-	{
-		var json = result.reduce (function (a, b) {
-			
-			a.v.push(b['Total amount'].replace(',', '.'));
-			a.k.push(b.Month);
-			return a;
-			
-		}, {v:[], k:[]})
-
-		/*
-		var json = {v:[], k:[]};
-		result.forEach(function (item) {
-			
-			json.v.push(item['Total amount'])
-			json.k.push(item.Month)
-		});
-		*/
-		
-		callback(json);
-	})
-	.catch ( function (err) {
-		if(err){
-			console.log("An error has occured");
-			console.log(err);  
-		}
-	});
-
-}
-
-// Copy the remote CSV locally
-function store_csv(app_path, archive, callback) {
-
-    csv = app_path + 'db/' + archive + '.csv';
-    remote_csv = 'http://' + conf.server_host + ':' + conf.server_port + '/';
-    remote_csv += archive + '-remote.csv';
-    file = fs.createWriteStream(csv);
-    store = http.get(remote_csv, function (response) {
-        response.pipe(file);
-        callback(null);
-    });
 }
 
 /**********************************************************************/
