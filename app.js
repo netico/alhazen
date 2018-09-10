@@ -40,8 +40,8 @@ app.get('/view', function (req, res) {
         case 'orders':
 			query = 'select o.orderid as "Number", date_part(\'year\', o.orderdate) as "Year", date_part(\'month\', o.orderdate) as "Month", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid';		
             break;
-        case 'orders-trend-chart':
-			query = 'select sum(o.totalamount) as "Total amount" , to_char(o.orderdate, \'YYYY-MM\') as "Month" from orders o group by to_char(o.orderdate, \'YYYY-MM\')';
+        case 'orders-bar-chart':
+			query = 'select sum(o.totalamount) as "Total amount" , to_char(o.orderdate, \'YYYY-MM\') as "Month" from orders o group by to_char(o.orderdate, \'YYYY-MM\') order by "Month"';
 			break;
     }
     module(res, parameter_module, query, app, app_path);
@@ -66,9 +66,9 @@ app.get('/reload', function (req, res) {
                 res.redirect('/view/?module=orders');
             });
             break;
-       case 'orders-trend-chart':
-            store_csv(app_path, 'orders-trend-chart', function () {
-                res.redirect('/view/?module=orders-trend-chart');
+       case 'orders-bar-chart':
+            store_csv(app_path, 'orders-bar-chart', function () {
+                res.redirect('/view/?module=orders-bar-chart');
             });
             break;
         default:
@@ -128,7 +128,7 @@ function module(res, archive, query, app, app_path) {
     
     app.get('/' + archive + '-bar-chart-local.json', function (req, res) {
 
-        get_json_bar_chart(app_path + 'db/' + archive + '.csv', function (JSON) {
+        get_json_bar_chart(app_path + 'db/' + archive + '-bar-chart.csv', function (JSON) {
             res.header('Content-type: text/json');
             res.json(JSON);
         });
@@ -235,8 +235,39 @@ function get_json_headers (csv_file, callback) {
 	});
 }
 
-function get_json_bar_chart () {
+function get_json_bar_chart (csv_file, callback) {
 	
+	var converter = new csvtojson_converter({
+		delimiter: ';'
+	});
+	
+	converter.fromFile(csv_file).then ( function (result) 
+	{
+		var json = result.reduce (function (a, b) {
+			
+			a.v.push(b['Total amount']);
+			a.k.push(b.Month);
+			return a;
+			
+		}, {v:[], k:[]})
+
+		/*
+		var json = {v:[], k:[]};
+		result.forEach(function (item) {
+			
+			json.v.push(item['Total amount'])
+			json.k.push(item.Month)
+		});
+		*/
+		
+		callback(json);
+	})
+	.catch ( function (err) {
+		if(err){
+			console.log("An error has occured");
+			console.log(err);  
+		}
+	});
 
 }
 

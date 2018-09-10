@@ -12,8 +12,8 @@
 					</script>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="btn-group mr-2">
-                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/reload/?module=orders-trend-chart'">Reload data</button>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/orders-local.csv'">Download in CSV format</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/reload/?module=orders-bar-chart'">Reload data</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="location.href = '/orders-bar-chart-local.csv'">Download in CSV format</button>
                         </div>
                     </div>
                 </div>
@@ -24,7 +24,7 @@
 
 				var ctx = document.getElementById("myChart");
 
-				ctx.height = 120;
+				ctx.height = 140;
 				var myChart = new Chart(ctx, {
 					type: 'bar',
 					data: {
