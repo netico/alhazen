@@ -1,0 +1,36 @@
+<% include ../header.ejs %>
+
+<canvas id="output"></canvas>
+<script>	
+	
+jQuery.ajax({
+	type: 'GET',
+	dataType: 'json',
+	url: '/orders-bar-chart-local.json',
+	success: function (output) {
+	
+		Chart.defaults.global.legend.display = false;
+
+		var ctx = document.getElementById("output");
+
+		ctx.height = 120;
+		var myChart = new Chart(ctx, {
+			type: 'bar',
+			data: {
+				labels: output.k,
+				datasets: [{
+					label: 'Example',
+					data: output.v,
+					backgroundColor: 'rgba(54, 162, 235, 0.2)'
+				}]
+			},
+		});
+	},
+	error: function (err) {
+		console.log(err)
+	}
+});
+
+</script>
+
+<% include ../footer.ejs %>

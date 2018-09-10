@@ -36,15 +36,19 @@ app.get('/view', function (req, res) {
 
         case 'customers':
             query = 'select firstname as "First name", lastname as "Last name", city as "City", country as "Country", age as "Age", income as "Income" FROM customers';
+            type = 'straight-table';
             break;
         case 'orders':
 			query = 'select o.orderid as "Number", date_part(\'year\', o.orderdate) as "Year", date_part(\'month\', o.orderdate) as "Month", to_char(o.orderdate, \'YYYY-MM-DD\') as "Date", concat (c.firstname, \' \', c.lastname) as "Customer", o.netamount as "Net amount", o.tax as "Tax", o.totalamount as "Total amount" from orders o left join customers c on o.customerid = c.customerid';		
+            type = 'straight-table';
             break;
         case 'orders-bar-chart':
 			query = 'select sum(o.totalamount) as "Total amount" , to_char(o.orderdate, \'YYYY-MM\') as "Month" from orders o group by to_char(o.orderdate, \'YYYY-MM\') order by "Month"';
+			type = 'bar-chart';
 			break;
     }
-    module(res, parameter_module, query, app, app_path);
+    //module(res, parameter_module, query, app, app_path);
+	sheet (res, parameter_module, query, app, app_path, type);
 });
 
 // Home
@@ -76,19 +80,21 @@ app.get('/reload', function (req, res) {
         default:
             res.redirect('/');
     }
-
 });
+
 /**********************************************************************/
 
-// Module
-function module(res, archive, query, app, app_path) {
+function sheet (res, archive, query, app, app_path, type) {
 
     // HTML
-    res.render('template/modules/' + archive + '.ejs');
+    res.render('template/types/' + type + '.ejs');
+    //res.render('template/modules/' + module + '.ejs');
+    
     // Reload the archive remotely
     app.get('/' + archive + '-remote.csv', function (req, res) {
 
         library.get_csv (conf.connection_string, query, function (CSV) {
+			
             res.header('Content-type: text/csv');
             res.send(new Buffer(CSV));
         });
@@ -105,6 +111,7 @@ function module(res, archive, query, app, app_path) {
     app.get('/' + archive + '-local.json', function (req, res) {
 
         library.get_json(app_path + 'db/' + archive + '.csv', function (JSON) {
+			
             res.header('Content-type: text/json');
             res.json({data: JSON});
         });     
@@ -113,6 +120,7 @@ function module(res, archive, query, app, app_path) {
     app.get('/' + archive + '-headers-local.json', function (req, res) {
 
         library.get_json_headers(app_path + 'db/' + archive + '.csv', function (JSON) {
+			
             res.header('Content-type: text/json');
             res.json(JSON);
         });
@@ -121,11 +129,9 @@ function module(res, archive, query, app, app_path) {
     app.get('/' + archive + '-bar-chart-local.json', function (req, res) {
 
         library.get_json_bar_chart(app_path + 'db/' + archive + '-bar-chart.csv', function (JSON) {
+			
             res.header('Content-type: text/json');
             res.json(JSON);
         });
     });
-    
 }
-
-/**********************************************************************/

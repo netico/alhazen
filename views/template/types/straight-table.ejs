@@ -1,0 +1,25 @@
+<% include ../header.ejs %>
+
+<div>
+	<table  id="output" class="table table-striped table-bordered" style="width:100%"></table>
+</div>
+<script type="text/javascript" charset="utf-8">
+
+jQuery.ajax({
+	type: 'GET',
+	dataType: 'json',
+	url: '/' + module + '-headers-local.json',
+	success: function (columns) {
+		$('#output').DataTable( {
+			ajax: '/' + module + '-local.json',
+			columns: columns
+		})
+	},
+	error: function (err) {
+		console.log(err)
+	}
+});
+</script>
+
+
+<% include ../footer.ejs %>
