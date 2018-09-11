@@ -45,8 +45,8 @@
 				<li class="nav-item dropdown">
 					<a class="nav-link dropdown-toggle active" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Straight tables</a>
 					<div class="dropdown-menu" aria-labelledby="dropdown01">
-						<a class="dropdown-item" href="/view/?module=orders">Orders</a>
-						<a class="dropdown-item" href="/view/?module=customers">Customers</a>
+						<a class="dropdown-item" href="/view/orders">Orders</a>
+						<a class="dropdown-item" href="/view/customers">Customers</a>
 					</div>
 				</li>
 
@@ -54,7 +54,7 @@
 				<li class="nav-item dropdown">
 					<a class="nav-link dropdown-toggle active" href="#" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Bar charts</a>
 					<div class="dropdown-menu" aria-labelledby="dropdown02">                  
-						<a class="dropdown-item" href="/view/?module=orders-bar-chart">Orders</a>
+						<a class="dropdown-item" href="/view/orders-bar-chart">Orders</a>
 					</div>
 				</li>
 			</ul>
@@ -70,23 +70,23 @@
 
 				<h1 class="h2"></h1>
 				<script type="text/javascript" charset="utf-8">
-					var urlParams = new URLSearchParams(window.location.search);
-					var module = urlParams.get('module');
-					$('.h2').html(module);
+					var url = window.location.pathname.split('/');
+					var sheet = url[url.length - 1];
+					$('.h2').html(sheet);
 					
-					function reload_data (module) {
-						location.href = '/reload/?module=' + module;
+					function reload_data (sheet) {
+						location.href = '/reload/' + sheet;
 					}
 					
-					function download_data (module) {
-						location.href = '/' + module + '-local.csv';
+					function download_data (sheet) {
+						location.href = '/get/local/csv/' + sheet;
 					}
 					
 				</script>
 				<div class="btn-toolbar mb-2 mb-md-0">
 					<div class="btn-group mr-2">
-						<button class="btn btn-sm btn-outline-secondary" onclick="reload_data (module);">Reload data</button>
-						<button class="btn btn-sm btn-outline-secondary" onclick="download_data (module);">Download in CSV format</button>
+						<button class="btn btn-sm btn-outline-secondary" onclick="reload_data (sheet);">Reload data</button>
+						<button class="btn btn-sm btn-outline-secondary" onclick="download_data (sheet);">Download in CSV format</button>
 					</div>
 				</div>
 			</div>

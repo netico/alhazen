@@ -67,7 +67,7 @@ module.exports.get_csv = function (config, query, callback) {
     });
 };
 
-module.exports.get_json = function (csv_file, callback) {
+module.exports.get_local_json_straight_table_data = function (csv_file, callback) {
 	
 	var converter = new csvtojson_converter({
 		delimiter: ';'
@@ -86,7 +86,7 @@ module.exports.get_json = function (csv_file, callback) {
 	});
 };
 
-module.exports.get_json_headers = function (csv_file, callback) {
+module.exports.get_local_json_straight_table_headers = function (csv_file, callback) {
 	
 	fs.readFile(csv_file, 'utf8', function (err, data) {
 		if (err) {
@@ -105,7 +105,7 @@ module.exports.get_json_headers = function (csv_file, callback) {
 	});
 };
 
-module.exports.get_json_bar_chart = function (csv_file, callback) {
+module.exports.get_local_json_bar_chart_data = function (csv_file, callback) {
 	
 	var converter = new csvtojson_converter({
 		delimiter: ';'
@@ -120,15 +120,6 @@ module.exports.get_json_bar_chart = function (csv_file, callback) {
 			return a;
 			
 		}, {v:[], k:[]});
-
-		/*
-		var json = {v:[], k:[]};
-		result.forEach(function (item) {
-			
-			json.v.push(item['Total amount'])
-			json.k.push(item.Month)
-		});
-		*/
 		
 		callback(json);
 	})
@@ -141,11 +132,11 @@ module.exports.get_json_bar_chart = function (csv_file, callback) {
 };
 
 // Copy the remote CSV locally
-module.exports.store_csv = function (app_path, archive, callback) {
+module.exports.store_csv = function (app_path, sheet, callback) {
 
-    csv = app_path + 'db/' + archive + '.csv';
+    csv = app_path + 'db/' + sheet + '.csv';
     remote_csv = 'http://' + conf.server_host + ':' + conf.server_port + '/';
-    remote_csv += archive + '-remote.csv';
+    remote_csv += 'get/remote/csv/' + sheet;
     file = fs.createWriteStream(csv);
     store = http.get (remote_csv, function (response) {
         response.pipe(file);

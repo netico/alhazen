@@ -8,10 +8,10 @@
 jQuery.ajax({
 	type: 'GET',
 	dataType: 'json',
-	url: '/' + module + '-headers-local.json',
+	url: '/get/local/json/straight-table/headers/' + sheet,
 	success: function (columns) {
 		$('#output').DataTable( {
-			ajax: '/' + module + '-local.json',
+			ajax: '/get/local/json/straight-table/data/' + sheet,
 			columns: columns
 		})
 	},

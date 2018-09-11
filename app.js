@@ -29,10 +29,10 @@ server = app.listen(process.env.PORT || conf.server_port, function () {
 /**********************************************************************/
 
 // Routing
-app.get('/view', function (req, res) {
+app.get('/view/:sheet', function (req, res) {
 
-    parameter_module = req.query.module;
-    switch (parameter_module) {
+    sheet = req.params.sheet;
+    switch (sheet) {
 
         case 'customers':
             query = 'select firstname as "First name", lastname as "Last name", city as "City", country as "Country", age as "Age", income as "Income" FROM customers';
@@ -48,50 +48,35 @@ app.get('/view', function (req, res) {
 			break;
     }
     //module(res, parameter_module, query, app, app_path);
-	sheet (res, parameter_module, query, app, app_path, type);
+	route (res, sheet, query, app, app_path, type);
 });
 
 // Home
 app.get('/', function (req, res) {
 
-    res.redirect('/view/?module=orders');
+    res.redirect('/view/orders');
 });
 
-// Reload archives remotely and copy them locally
-app.get('/reload', function (req, res) {
 
-    parameter_module = req.query.module;
-    switch (parameter_module) {
-        case 'customers':
-            library.store_csv(app_path, 'customers', function () {
-                res.redirect('/view/?module=customers');
-            });
-            break;
-        case 'orders':
-            library.store_csv(app_path, 'orders', function () {
-                res.redirect('/view/?module=orders');
-            });
-            break;
-       case 'orders-bar-chart':
-            library.store_csv(app_path, 'orders-bar-chart', function () {
-                res.redirect('/view/?module=orders-bar-chart');
-            });
-            break;
-        default:
-            res.redirect('/');
-    }
+// Reload sheets remotely and copy them locally
+app.get('/reload/:sheet', function (req, res) {
+
+	sheet = req.params.sheet;
+	library.store_csv(app_path, sheet, function () {
+		res.redirect('/view/' + sheet);
+	});
+	
 });
 
 /**********************************************************************/
 
-function sheet (res, archive, query, app, app_path, type) {
+function route (res, sheet, query, app, app_path, type) {
 
     // HTML
     res.render('template/types/' + type + '.ejs');
-    //res.render('template/modules/' + module + '.ejs');
     
-    // Reload the archive remotely
-    app.get('/' + archive + '-remote.csv', function (req, res) {
+    // Reload the sheet remotely
+    app.get('/get/remote/csv/' + sheet, function (req, res) {
 
         library.get_csv (conf.connection_string, query, function (CSV) {
 			
@@ -100,35 +85,35 @@ function sheet (res, archive, query, app, app_path, type) {
         });
     });
     
-    // Provides the local archive in CSV format
-    app.get('/' + archive + '-local.csv', function (req, res) {
+    // Provides the local sheet in CSV format
+    app.get('/get/local/csv/' + sheet, function (req, res) {
 
         res.header('Content-type: text/csv');
-        res.sendFile(app_path + 'db/' + archive + '.csv');
+        res.sendFile(app_path + 'db/' + sheet + '.csv');
     });
     
-    // Provides the local archive in JSON format
-    app.get('/' + archive + '-local.json', function (req, res) {
+    // Provides the local sheet in JSON format
+    app.get('/get/local/json/straight-table/data/' + sheet, function (req, res) {
 
-        library.get_json(app_path + 'db/' + archive + '.csv', function (JSON) {
+        library.get_local_json_straight_table_data(app_path + 'db/' + sheet + '.csv', function (JSON) {
 			
             res.header('Content-type: text/json');
             res.json({data: JSON});
         });     
     });
     
-    app.get('/' + archive + '-headers-local.json', function (req, res) {
+    app.get('/get/local/json/straight-table/headers/' + sheet, function (req, res) {
 
-        library.get_json_headers(app_path + 'db/' + archive + '.csv', function (JSON) {
+        library.get_local_json_straight_table_headers(app_path + 'db/' + sheet + '.csv', function (JSON) {
 			
             res.header('Content-type: text/json');
             res.json(JSON);
         });
     });
     
-    app.get('/' + archive + '-bar-chart-local.json', function (req, res) {
+    app.get('/get/local/json/bar-chart/data/' + sheet, function (req, res) {
 
-        library.get_json_bar_chart(app_path + 'db/' + archive + '-bar-chart.csv', function (JSON) {
+        library.get_local_json_bar_chart_data(app_path + 'db/' + sheet + '.csv', function (JSON) {
 			
             res.header('Content-type: text/json');
             res.json(JSON);

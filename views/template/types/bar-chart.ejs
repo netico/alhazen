@@ -6,7 +6,7 @@
 jQuery.ajax({
 	type: 'GET',
 	dataType: 'json',
-	url: '/orders-bar-chart-local.json',
+	url: '/get/local/json/bar-chart/data/' + sheet,
 	success: function (output) {
 	
 		Chart.defaults.global.legend.display = false;
