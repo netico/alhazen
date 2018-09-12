@@ -7,6 +7,6 @@ body {
     text-align: left;
 }
 
-.h2 {
-    text-transform: capitalize;
+.h3 {
+    text-transform: uppercase;
 }

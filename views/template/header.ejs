@@ -45,8 +45,8 @@
 				<li class="nav-item dropdown">
 					<a class="nav-link dropdown-toggle active" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Straight tables</a>
 					<div class="dropdown-menu" aria-labelledby="dropdown01">
-						<a class="dropdown-item" href="/view/orders">Orders</a>
-						<a class="dropdown-item" href="/view/customers">Customers</a>
+						<a class="dropdown-item" href="/view/straight-table/orders">Orders</a>
+						<a class="dropdown-item" href="/view/straight-table/customers">Customers</a>
 					</div>
 				</li>
 
@@ -54,7 +54,7 @@
 				<li class="nav-item dropdown">
 					<a class="nav-link dropdown-toggle active" href="#" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Bar charts</a>
 					<div class="dropdown-menu" aria-labelledby="dropdown02">                  
-						<a class="dropdown-item" href="/view/orders-bar-chart">Orders</a>
+						<a class="dropdown-item" href="/view/bar-chart/orders">Orders</a>
 					</div>
 				</li>
 			</ul>
@@ -68,18 +68,19 @@
 		<div class="starter-template">
 			<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
 
-				<h1 class="h2"></h1>
+				<h1 class="h3"></h1>
 				<script type="text/javascript" charset="utf-8">
 					var url = window.location.pathname.split('/');
 					var sheet = url[url.length - 1];
-					$('.h2').html(sheet);
+					var type = url[url.length - 2];
+					$('.h3').html(sheet + ' (' + type.replace('-', ' ') + ')');
 					
 					function reload_data (sheet) {
-						location.href = '/reload/' + sheet;
+						location.href = '/reload/' + type + '/' + sheet;
 					}
 					
 					function download_data (sheet) {
-						location.href = '/get/local/csv/' + sheet;
+						location.href = '/get/local/csv/data/' + type + '/' + sheet;
 					}
 					
 				</script>

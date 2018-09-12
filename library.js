@@ -113,14 +113,17 @@ module.exports.get_local_json_bar_chart_data = function (csv_file, callback) {
 	
 	converter.fromFile(csv_file).then ( function (result) 
 	{
+			
 		var json = result.reduce (function (a, b) {
 			
-			a.v.push(b['Total amount'].replace(',', '.'));
-			a.k.push(b.Month);
+			b = Object.values(b);
+			a.v.push(b[1].replace(',', '.'));
+			a.k.push(b[2]);
+			
 			return a;
 			
 		}, {v:[], k:[]});
-		
+
 		callback(json);
 	})
 	.catch ( function (err) {
@@ -132,11 +135,11 @@ module.exports.get_local_json_bar_chart_data = function (csv_file, callback) {
 };
 
 // Copy the remote CSV locally
-module.exports.store_csv = function (app_path, sheet, callback) {
+module.exports.store_csv = function (app_path, sheet, type, callback) {
 
-    csv = app_path + 'db/' + sheet + '.csv';
+    csv = app_path + 'db/' + sheet + '-' + type + '.csv';
     remote_csv = 'http://' + conf.server_host + ':' + conf.server_port + '/';
-    remote_csv += 'get/remote/csv/' + sheet;
+    remote_csv += 'get/remote/csv/' + type + '/' + sheet;
     file = fs.createWriteStream(csv);
     store = http.get (remote_csv, function (response) {
         response.pipe(file);
