@@ -1,6 +1,6 @@
 # Analytics Made Easy
 
-## Requirements
+## Credits
 * Express - http://expressjs.com/
 * EJS - http://ejs.co/
 * node-postgres - https://node-postgres.com/
@@ -9,7 +9,10 @@
 * Chart.js - http://www.chartjs.org/
 
 ## Setup
+    
     npm install
+
+## Usage
 
     npm run start 
 

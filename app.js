@@ -60,7 +60,7 @@ app.get('/view/:type/:sheet', function (req, res) {
     });
     
     // Provides the local sheet in CSV format
-    app.get('/get/local/csv/data/' + sheet, function (req, res) {
+    app.get('/get/local/csv/data/' + type + '/' + sheet, function (req, res) {
 
         res.header('Content-type: text/csv');
         res.sendFile(app_path + 'db/' + sheet + '-' + type + '.csv');
