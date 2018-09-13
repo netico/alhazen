@@ -1,12 +1,13 @@
 # Analytics Made Easy
 
 ## Credits
-* Express - http://expressjs.com/
-* EJS - http://ejs.co/
-* node-postgres - https://node-postgres.com/
+* Express - http://expressjs.com
+* EJS - http://ejs.co
+* node-postgres - https://node-postgres.com
 * node-csvtojson - https://github.com/Keyang/node-csvtojson
-* DataTables - https://datatables.net/
-* Chart.js - http://www.chartjs.org/
+* DataTables - https://datatables.net
+* Chart.js - http://www.chartjs.org
+* Lodash - https://lodash.com
 
 ## Setup
     

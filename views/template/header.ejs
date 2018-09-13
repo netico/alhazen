@@ -80,15 +80,13 @@
 					}
 					
 					function download_data (sheet) {
-						location.href = '/get/local/csv/data/' + type + '/' + sheet;
+						location.href = '/get/local/csv/' + type + '/' + sheet;
 					}
 					
 				</script>
-				<div class="btn-toolbar mb-2 mb-md-0">
-					<div class="btn-group mr-2">
-						<button class="btn btn-sm btn-outline-secondary" onclick="reload_data (sheet);">Reload data</button>
-						<button class="btn btn-sm btn-outline-secondary" onclick="download_data (sheet);">Download in CSV format</button>
-					</div>
+				<div class="btn-toolbar">
+					<button class="btn btn-success" onclick="reload_data (sheet);">Reload data</button> 
+					 <button class="btn btn-primary" onclick="download_data (sheet);">Download in CSV format</button>
 				</div>
 			</div>
 		</div>

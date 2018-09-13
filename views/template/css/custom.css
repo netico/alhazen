@@ -10,3 +10,7 @@ body {
 .h3 {
     text-transform: uppercase;
 }
+
+.btn {
+    margin-left: 1rem;
+}
