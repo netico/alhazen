@@ -33,6 +33,7 @@
 
     </head>
     <body>
+		
 	<nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-dark">
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content" aria-controls="nav-content" aria-expanded="false" aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon"></span>
@@ -69,24 +70,25 @@
 			<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
 
 				<h1 class="h3"></h1>
-				<script type="text/javascript" charset="utf-8">
-					var url = window.location.pathname.split('/');
-					var sheet = url[url.length - 1];
-					var type = url[url.length - 2];
-					$('.h3').html(sheet + ' (' + type.replace('-', ' ') + ')');
-					
-					function reload_data (sheet) {
-						location.href = '/reload/' + type + '/' + sheet;
-					}
-					
-					function download_data (sheet) {
-						location.href = '/get/local/csv/' + type + '/' + sheet;
-					}
-					
-				</script>
 				<div class="btn-toolbar">
 					<button class="btn btn-success" onclick="reload_data (sheet);">Reload data</button> 
 					 <button class="btn btn-primary" onclick="download_data (sheet);">Download in CSV format</button>
 				</div>
 			</div>
 		</div>
+		<script type="text/javascript" charset="utf-8">
+			var url = window.location.pathname.split('/');
+			var sheet = url[url.length - 1];
+			var type = url[url.length - 2];
+			$('.h3').html (sheet + ' (' + type.replace('-', ' ') + ')');
+			
+			function reload_data (sheet) 
+			{
+				location.href = '/reload/' + type + '/' + sheet;
+			}
+			
+			function download_data (sheet) 
+			{
+				location.href = '/get/local/csv/' + type + '/' + sheet;
+			}
+		</script>	

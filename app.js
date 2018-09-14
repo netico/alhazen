@@ -89,6 +89,15 @@ app.get('/', function (req, res)
     res.redirect ('/view/straight-table/orders');
 });
 
+app.get('/get/conf/:item', function (req, res) 
+{
+	item = req.params.item;
+	var a = library.get_sheets_and_types(item);
+	res.header ('Content-type: text/json');
+    res.json ({conf: a[item]});
+});
+
+
 // Reload sheets remotely and copy them locally
 app.get ('/reload/:type/:sheet', function (req, res) 
 {

@@ -152,3 +152,24 @@ module.exports.store_csv = function (app_path, sheet, type, callback)
         callback (null);
     });
 };
+
+module.exports.get_sheets_and_types = function (filter)
+{
+    var result = [];
+    var keys = Object.keys (conf.sheets);
+    keys.forEach (function (key) 
+    {
+        result.push (sheets[key]);
+    });
+    s = lodash.uniqBy(result, filter);
+	var array = s.reduce (function (a, b) 
+	{		
+		b = Object.values(b);
+		a.type.push(b[1]);
+		a.name.push(b[2]);
+		return a;			
+	}, {type:[], name:[]});
+	
+	return array;
+};
+
