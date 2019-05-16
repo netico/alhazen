@@ -1,25 +1,25 @@
 
-const library = require ('./library');
-const conf = require ('./configuration');
-const sheets = conf.sheets;
+library = require ('./library');
+conf = require ('./configuration');
+sheets = conf.sheets;
 
 /**********************************************************************/
 
 // node.js
-const express = require ('express');
-const pg_client = require ('pg').Client;
-const ejs = require ('ejs');
-const csvtojson_converter = require ('csvtojson').Converter;
-const lodash = require ('lodash');
-const fs = require ('fs');
-const http = require ('http');
-const path = require ('path');
+express = require ('express');
+pg_client = require ('pg').Client;
+ejs = require ('ejs');
+csvtojson_converter = require ('csvtojson').Converter;
+lodash = require ('lodash');
+fs = require ('fs');
+http = require ('http');
+path = require ('path');
 
 /**********************************************************************/
 
 // App Express
 app = express ();
-app_path = path.join (__dirname) + '/';
+app_path = path.join(__dirname) + '/';
 app.use ('/views', express.static (app_path + 'views'));
 server = app.listen (process.env.PORT || conf.server_port, function ()
 {
@@ -45,7 +45,7 @@ app.get('/view/:type/:sheet', function (req, res)
         library.get_csv (conf.connection_string, item.query, function (CSV)
         {
             res.header ('Content-type: text/csv');
-            res.send (new Buffer(CSV));
+            res.send (new Buffer.from(CSV));
         });
     });
 
@@ -84,9 +84,11 @@ app.get('/view/:type/:sheet', function (req, res)
 });
 
 // Home
-app.get('/', function (req, res)
-{
-    res.redirect ('/view/straight-table/orders');
+app.get('/', function (req, res) {
+  let type = sheets[1].type;
+  let sheet = sheets[1].name;
+  // redirect to first available query
+  res.redirect ('/view/' + type + '/' + sheet + '');
 });
 
 app.get('/get/conf/:item', function (req, res)
@@ -97,6 +99,16 @@ app.get('/get/conf/:item', function (req, res)
     res.json ({conf: a[item]});
 });
 
+app.get('/get/nav', (req, res) => {
+  let keys = Object.keys(sheets);
+  let array = [];
+  keys.forEach((key) => {
+    array.push({type: sheets[key].type, name: sheets[key].name})
+  });
+  let result = lodash.groupBy(array, 'type');
+  res.header ('Content-type: text/json');
+  res.json(result);
+})
 
 // Reload sheets remotely and copy them locally
 app.get ('/reload/:type/:sheet', function (req, res)
