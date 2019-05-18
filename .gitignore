@@ -62,3 +62,7 @@ typings/
 
 # Geany project
 analytics.js.geany
+
+db
+configuration.js
+.eslintrc*

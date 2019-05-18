@@ -19,7 +19,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
     <!-- Custom CSS -->
-    <link href="/views/template/css/custom.css" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet">
 
     <!-- DataTables -->
   	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
@@ -75,8 +75,10 @@
   		</div>
   		<script type="text/javascript" charset="utf-8">
   			let url = window.location.pathname.split('/');
-        let sheet = url[url.length - 1];
+            let sheet = url[url.length - 1];
   			let type = url[url.length - 2];
+            console.log(sheet, type);
+
   			$('.h3').html (sheet + ' (' + type.replace('-', ' ') + ')');
 
   			function reload_data (sheet)

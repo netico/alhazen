@@ -1,123 +1,92 @@
-
-library = require ('./library');
-conf = require ('./configuration');
-sheets = conf.sheets;
-
-/**********************************************************************/
-
 // node.js
-express = require ('express');
-pg_client = require ('pg').Client;
-ejs = require ('ejs');
-csvtojson_converter = require ('csvtojson').Converter;
-lodash = require ('lodash');
-fs = require ('fs');
-http = require ('http');
-path = require ('path');
+const express = require('express');
+const lodash = require('lodash');
+const path = require('path');
+const conf = require('./configuration');
+const library = require('./library');
 
-/**********************************************************************/
+const { sheets } = conf;
+/** ******************************************************************* */
 
 // App Express
-app = express ();
-app_path = path.join(__dirname) + '/';
-app.use ('/views', express.static (app_path + 'views'));
-server = app.listen (process.env.PORT || conf.server_port, function ()
-{
-    port = server.address().port;
-    console.log('Server started on port', port);
+const app = express();
+const appPath = `${path.join(__dirname)}/`;
+// app.use('/views', express.static(`${appPath}views`));
+app.use(express.static('assets'));
+app.use(express.static('db'));
+app.set('view engine', 'ejs');
+app.set('views', './views');
+const server = app.listen(process.env.PORT || conf.server_port, () => {
+  const { port } = server.address();
+  console.log('Server started on port', port);
 });
 
-/**********************************************************************/
+/** ******************************************************************* */
 
 // Routing
-app.get('/view/:type/:sheet', function (req, res)
-{
-    sheet = req.params.sheet;
-    type = req.params.type;
-    item = lodash.find (sheets, {'name': sheet, 'type': type});
-    db_csv = app_path + 'db/' + sheet + '-' + type + '.csv';
+app.get('/view/:type/:sheet', (req, res) => {
+  const { type } = req.params;
+  // HTML template
+  res.render(`template/types/${type}.ejs`);
+});
 
-    // HTML template
-    res.render ('template/types/' + type + '.ejs');
+app.get('/get/remote/csv/:type/:sheet', (req, res) => {
+  const { sheet, type } = req.params;
+  const item = lodash.find(sheets, { name: sheet, type });
+  library.get_csv(conf.connection_string, item.query, (CSV) => {
+    res.header('Content-type: text/csv');
+    res.send(Buffer.from(CSV));
+  });
+});
 
-    app.get ('/get/remote/csv/' + type + '/' + sheet, function (req, res)
-    {
-        library.get_csv (conf.connection_string, item.query, function (CSV)
-        {
-            res.header ('Content-type: text/csv');
-            res.send (new Buffer.from(CSV));
-        });
-    });
+app.get('/get/local/csv/:type/:sheet', (req, res) => {
+  const { sheet, type } = req.params;
+  const dbCSV = `${appPath}db/${sheet}-${type}.csv`;
+  res.header('Content-type: text/csv');
+  res.sendFile(dbCSV);
+});
 
-    app.get ('/get/local/csv/' + type + '/' + sheet, function (req, res)
-    {
-        res.header ('Content-type: text/csv');
-        res.sendFile (db_csv);
-    });
-
-    app.get ('/get/local/json/straight-table/data/' + sheet, function (req, res)
-    {
-        library.get_local_json_straight_table_data (db_csv, function (JSON)
-        {
-            res.header ('Content-type: text/json');
-            res.json ({data: JSON});
-        });
-    });
-
-    app.get ('/get/local/json/straight-table/headers/' + sheet, function (req, res)
-    {
-        library.get_local_json_straight_table_headers (db_csv, function (JSON)
-        {
-            res.header ('Content-type: text/json');
-            res.json (JSON);
-        });
-    });
-
-    app.get ('/get/local/json/bar-chart/data/' + sheet, function (req, res)
-    {
-        library.get_local_json_bar_chart_data(db_csv, function (JSON)
-        {
-            res.header ('Content-type: text/json');
-            res.json (JSON);
-        });
-    });
+// Get data
+app.get('/get/local/json/:type/data/:sheet', (req, res) => {
+  const { sheet, type } = req.params;
+  const chart = type.replace('-', '_');
+  library[`get_local_json_${chart}_data`](sheet, type, (JSON) => {
+    res.header('Content-type: text/json');
+    res.json(JSON);
+  });
 });
 
 // Home
-app.get('/', function (req, res) {
-  let type = sheets[1].type;
-  let sheet = sheets[1].name;
+app.get('/', (req, res) => {
+  const { type } = sheets[1];
+  const sheet = sheets[1].name;
   // redirect to first available query
-  res.redirect ('/view/' + type + '/' + sheet + '');
+  res.redirect(`/view/${type}/${sheet}`);
 });
 
-app.get('/get/conf/:item', function (req, res)
-{
-	item = req.params.item;
-	var a = library.get_sheets_and_types(item);
-	res.header ('Content-type: text/json');
-    res.json ({conf: a[item]});
+app.get('/get/conf/:item', (req, res) => {
+  const { item } = req.params;
+  const a = library.get_sheets_and_types(item);
+  res.header('Content-type: text/json');
+  res.json({ conf: a[item] });
 });
 
+// Populate navbar menu
 app.get('/get/nav', (req, res) => {
-  let keys = Object.keys(sheets);
-  let array = [];
+  const keys = Object.keys(sheets);
+  const array = [];
   keys.forEach((key) => {
-    array.push({type: sheets[key].type, name: sheets[key].name})
+    array.push({ type: sheets[key].type, name: sheets[key].name });
   });
-  let result = lodash.groupBy(array, 'type');
-  res.header ('Content-type: text/json');
+  const result = lodash.groupBy(array, 'type');
+  res.header('Content-type: text/json');
   res.json(result);
-})
+});
 
 // Reload sheets remotely and copy them locally
-app.get ('/reload/:type/:sheet', function (req, res)
-{
-	sheet = req.params.sheet;
-	type = req.params.type;
-	library.store_csv (app_path, sheet, type, function ()
-	{
-		res.redirect ('/view/' + type + '/' + sheet);
-	});
-
+app.get('/reload/:type/:sheet', (req, res) => {
+  const { sheet, type } = req.params;
+  library.store_csv(sheet, type, () => {
+    res.redirect(`/view/${type}/${sheet}`);
+  });
 });
