@@ -1,0 +1,29 @@
+<nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-dark">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content" aria-controls="nav-content" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <!-- Menu -->
+  <div class="collapse navbar-collapse" id="nav-content">
+    <ul class="navbar-nav">
+      <!-- Dynamic label -->
+      <script type="text/javascript" charset="utf-8">
+          jQuery.get('/get/nav', function (data)
+          {
+            for (let key in data) {
+              $('.navbar-nav').append('<li class="nav-item dropdown" id="li-' + key + '"></li>');
+              $('#li-' + key).append('<a class="nav-link dropdown-toggle active" href="#" id="dropdown-' + key + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + key + '</a>');
+              $('#li-' + key).append('<div class="dropdown-menu" id="div-' + key +'" aria-labelledby="dropdown-' + key + '"></div>');
+              for (let value of data[key]) {
+                let name = value.name;
+                $('#div-' + key).append('<a class="dropdown-item" href="/view/' + key +'/' + name + '">' + name.charAt(0).toUpperCase() + name.slice(1) + '</a>')
+              }
+            }
+            //hide sidebar type
+            document.getElementById('li-' + type).classList.add('d-block', 'd-lg-none');
+          });
+      </script>
+    </ul>
+  </div>
+  <!-- Logo -->
+  <a class="navbar-brand justify-content-end" href="/">Analytics Made Easy</a>
+</nav>

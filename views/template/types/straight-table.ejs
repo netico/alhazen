@@ -1,17 +1,32 @@
-<% include ../header.ejs %>
+<%- include ../header.ejs -%>
 
-<div>
-	<table  id="output" class="table table-striped table-bordered" style="width:100%"></table>
+<%- include ../components/nav.ejs -%>
+
+<div class="container-fluid m-0">
+	<div class="row">
+		<%- include ../components/sidebar.ejs -%>
+		<div class="col col-lg-9 col-xl-10 px-4 py-3">
+			<%- include ../components/action-button.ejs -%>
+			<div class="table-responsive">
+				<table id="output" class="table table-striped table-bordered"></table>
+			</div>
+		</div>
+	</div>
 </div>
+
 <script type="text/javascript" charset="utf-8">
 	jQuery.ajax({
 		type: 'GET',
 		dataType: 'json',
 		url: '/get/local/json/straight-table/data/' + sheet,
 		success: function (result) {
+			result.scrollX = true;
 			$('#output').DataTable(result);
 		}
-});
+	});
 </script>
 
-<% include ../footer.ejs %>
+<script src="/js/action-button.js" charset="utf-8"></script>
+<script src="/js/sidebar.js" charset="utf-8"></script>
+
+<%- include ../footer.ejs -%>

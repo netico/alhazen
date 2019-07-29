@@ -64,5 +64,5 @@ typings/
 analytics.js.geany
 
 db
-configuration.js
+config
 .eslintrc*

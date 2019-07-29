@@ -1,0 +1,116 @@
+:root{
+  --sweet-blue: #1e324a;
+  --sweet-yellow: #f6da2f;
+  --indigo: rgba(84, 13, 110, 1);
+  --paradise_pink: rgba(238, 66, 102, 1);
+  --lightsea_green: rgba(40, 175, 176, 1);
+  --stildegrain_yellow: rgba(244, 211, 94, 1);
+  --bigfoot_feet: rgba(238, 150, 75, 1);
+  --gunmetal: rgba(42, 50, 75, 1);
+  --eucalyptus: rgba(73, 212, 157, 1);
+  --violet: rgba(83, 35, 122, 1);
+  --viol: rgba(123, 52, 181, 1);
+}
+
+nav + main {
+  margin-top: 56px;
+}
+
+.card-home:hover {
+  transition: .2s;
+  cursor: pointer;
+}
+
+.chart-table:hover {
+  color: var(--viol) !important;
+  border-color: var(--viol) !important;
+}
+
+.chart-bar:hover {
+  color: var(--paradise_pink) !important;
+  border-color: var(--paradise_pink) !important;
+}
+
+.chart-pie:hover {
+  color: var(--lightsea_green) !important;
+  border-color: var(--lightsea_green) !important;
+}
+
+.chart-line:hover {
+  color: var(--stildegrain_yellow) !important;
+  border-color: var(--stildegrain_yellow) !important;
+}
+
+.chart-area:hover {
+  color: var(--bigfoot_feet) !important;
+  border-color: var(--bigfoot_feet) !important;
+}
+
+.chart-scatter:hover {
+  color: var(--eucalyptus) !important;
+  border-color: var(--eucalyptus) !important;
+}
+
+#straighttableModalTitle {
+  color: var(--viol) !important;
+}
+
+#barchartModalTitle {
+  color: var(--paradise_pink) !important;
+}
+
+#piechartModalTitle {
+  color: var(--lightsea_green) !important;
+}
+
+#linechartModalTitle {
+  color: var(--stildegrain_yellow) !important;
+}
+
+#areachartModalTitle {
+  color: var(--bigfoot_feet) !important;
+}
+
+#scatterchartModalTitle {
+  color: var(--eucalyptus) !important;
+}
+
+.bg-straight-table {
+  background: var(--viol);
+  color: #fff;
+}
+
+.bg-bar-chart {
+  background: var(--paradise_pink);
+  color: #fff;
+}
+
+.bg-pie-chart {
+  background: var(--lightsea_green);
+  color: #fff
+}
+
+.bg-line-chart {
+  background: var(--stildegrain_yellow);
+  color: #333;
+}
+
+.bg-area-chart {
+  background: var(--bigfoot_feet);
+  color: #fff;
+}
+
+.bg-scatter-chart {
+  background: var(--eucalyptus);
+  color: #333;
+}
+
+.sidebar {
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+}
+
+.smaller-text {
+  font-size: 90% !important;
+}

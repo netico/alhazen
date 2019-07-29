@@ -2,8 +2,9 @@
 const express = require('express');
 const lodash = require('lodash');
 const path = require('path');
-const conf = require('./configuration');
-const library = require('./library');
+const conf = require('./config');
+const library = require('./lib/library');
+const chartData = require('./lib/chart_data');
 
 const { sheets } = conf;
 /** ******************************************************************* */
@@ -16,6 +17,7 @@ app.use(express.static('assets'));
 app.use(express.static('db'));
 app.set('view engine', 'ejs');
 app.set('views', './views');
+
 const server = app.listen(process.env.PORT || conf.server_port, () => {
   const { port } = server.address();
   console.log('Server started on port', port);
@@ -33,7 +35,7 @@ app.get('/view/:type/:sheet', (req, res) => {
 app.get('/get/remote/csv/:type/:sheet', (req, res) => {
   const { sheet, type } = req.params;
   const item = lodash.find(sheets, { name: sheet, type });
-  library.get_csv(conf.connection_string, item.query, (CSV) => {
+  library.get_csv(conf.connection_string[item.db], item.query, (CSV) => {
     res.header('Content-type: text/csv');
     res.send(Buffer.from(CSV));
   });
@@ -50,25 +52,33 @@ app.get('/get/local/csv/:type/:sheet', (req, res) => {
 app.get('/get/local/json/:type/data/:sheet', (req, res) => {
   const { sheet, type } = req.params;
   const chart = type.replace('-', '_');
-  library[`get_local_json_${chart}_data`](sheet, type, (JSON) => {
+  chartData[`get_local_json_${chart}_data`](sheet, type, (JSON) => {
     res.header('Content-type: text/json');
     res.json(JSON);
   });
 });
 
 // Home
+// app.get('/', (req, res) => {
+//   const { type } = sheets[1];
+//   const sheet = sheets[1].name;
+//   // redirect to first available query
+//   res.redirect(`/view/${type}/${sheet}`);
+// });
+
 app.get('/', (req, res) => {
-  const { type } = sheets[1];
-  const sheet = sheets[1].name;
-  // redirect to first available query
-  res.redirect(`/view/${type}/${sheet}`);
+  res.render('template/pages/home.ejs');
 });
 
-app.get('/get/conf/:item', (req, res) => {
-  const { item } = req.params;
-  const a = library.get_sheets_and_types(item);
-  res.header('Content-type: text/json');
-  res.json({ conf: a[item] });
+app.get('/get/conf/sheets/:type?', (req, res) => {
+  const { type } = req.params;
+  const cleanSheets = sheets.map(e => ({ type: e.type, name: e.name, db: e.db }));
+  if (type === undefined) {
+    res.json(cleanSheets);
+  } else {
+    const arr = cleanSheets.filter(el => el.type === type);
+    res.json(arr);
+  }
 });
 
 // Populate navbar menu

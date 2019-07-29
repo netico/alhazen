@@ -5,89 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Analytics Made Easy">
     <meta name="author" content="Analytics Made Easy">
-    <link rel="icon" href="https://getbootstrap.com/favicon.ico">
+    <!-- <link rel="icon" href="https://getbootstrap.com/favicon.ico"> -->
 
     <title>Analytics Made Easy</title>
 
-    <!-- jQuery -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-
-    <!-- Charts.js -->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
-
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Datatables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.css"/>
+    <!-- Font Awesome 5 -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
     <!-- Custom CSS -->
     <link href="/css/custom.css" rel="stylesheet">
 
-    <!-- DataTables -->
-  	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
-  	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
-
-  	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
-  	<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
-
-    <!-- Charts.js -->
-    <script type="text/javascript" src="https://cdnjs.com/libraries/Chart.js"></script>
-
+    <!-- jQuery & Bootstrap-->
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <!-- Datatables -->
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/fh-3.1.4/r-2.2.2/datatables.min.js"></script>
+    <!-- Chart JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js" integrity="sha256-Uv9BNBucvCPipKQ2NS9wYpJmi8DTOEfTA/nH2aoJALw=" crossorigin="anonymous"></script>
   </head>
 
   <body>
-    <nav class="navbar fixed-top navbar-expand-sm navbar-dark bg-dark">
-  		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-content" aria-controls="nav-content" aria-expanded="false" aria-label="Toggle navigation">
-  			<span class="navbar-toggler-icon"></span>
-  		</button>
-
-  		<!-- Menu -->
-  		<div class="collapse navbar-collapse" id="nav-content">
-        <ul class="navbar-nav">
-          <!-- Dynamic label -->
-  				<script type="text/javascript" charset="utf-8">
-  				jQuery.get('/get/nav', function (data)
-  				{
-  					for (let key in data) {
-              $('.navbar-nav').append('<li class="nav-item dropdown" id="li-' + key + '"></li>');
-              $('#li-' + key).append('<a class="nav-link dropdown-toggle active" href="#" id="dropdown-' + key + '" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' + key + '</a>');
-              $('#li-' + key).append('<div class="dropdown-menu" id="div-' + key +'" aria-labelledby="dropdown-' + key + '"></div>');
-              for (let value of data[key]) {
-                let name = value.name;
-                $('#div-' + key).append('<a class="dropdown-item" href="/view/' + key +'/' + name + '">' + name.charAt(0).toUpperCase() + name.slice(1) + '</a>')
-              }
-  					}
-  				});
-  				</script>
-  			</ul>
-  		</div>
-  		<!-- Logo -->
-  		<a class="navbar-brand justify-content-end" href="/">Analytics Made Easy</a>
-  	</nav>
-
-  	<main role="main" class="container-fluid">
-  		<div class="starter-template">
-  			<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-  				<h1 class="h3"></h1>
-  				<div class="btn-toolbar">
-  					<button class="btn btn-success" onclick="reload_data (sheet);">Reload data</button>
-  					 <button class="btn btn-primary" onclick="download_data (sheet);">Download in CSV format</button>
-  				</div>
-  			</div>
-  		</div>
-  		<script type="text/javascript" charset="utf-8">
-  			let url = window.location.pathname.split('/');
-            let sheet = url[url.length - 1];
-  			let type = url[url.length - 2];
-            console.log(sheet, type);
-
-  			$('.h3').html (sheet + ' (' + type.replace('-', ' ') + ')');
-
-  			function reload_data (sheet)
-  			{
-  				location.href = '/reload/' + type + '/' + sheet;
-  			}
-
-  			function download_data (sheet)
-  			{
-  				location.href = '/get/local/csv/' + type + '/' + sheet;
-  			}
-  		</script>
+    <script type="text/javascript">
+      let url = window.location.pathname.split('/');
+    	let sheet = url[url.length - 1];
+    	let type = url[url.length - 2];
+    </script>

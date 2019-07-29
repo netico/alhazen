@@ -1,0 +1,105 @@
+<%- include ../header.ejs -%>
+<%- include ../components/nav.ejs -%>
+
+<div class="container">
+  <h1 class="display-2 text-center mt-5">Welcome zioPera</h1>
+  <hr class="w-50">
+  <div class="row px-5 px-md-0">
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-table" data-toggle="modal" data-target="#straighttableModal">
+          <i class="fas fa-table fa-2x "></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Straight Table</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-bar" data-toggle="modal" data-target="#barchartModal">
+          <i class="fas fa-chart-bar fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Bar Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-pie" data-toggle="modal" data-target="#piechartModal">
+          <i class="fas fa-chart-pie fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Pie Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-line" data-toggle="modal" data-target="#linechartModal">
+          <i class="fas fa-chart-line fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Line Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-area" data-toggle="modal" data-target="#areachartModal">
+          <i class="fas fa-chart-area fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Area Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-scatter" data-toggle="modal" data-target="#scatterchartModal">
+          <i class="fas fa-project-diagram fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Scatter Chart</p>
+        </div>
+    </div>
+  </div>
+
+  <div class="row" id="colors-box">
+
+  </div>
+</div>
+
+<script type="text/javascript">
+  document.getElementsByClassName('navbar-nav')[0].classList.add('invisible');
+  document.getElementsByClassName('navbar-toggler')[0].classList.add('invisible');
+  jQuery.get('/get/conf/sheets', function(data) {
+    let card = document.querySelectorAll('.card-home');
+
+    for (var i = 0; i < card.length; i++) {
+      let str = card[i].getAttribute('data-target')
+      let target = str.slice(1, str.length);
+      let name = card[i].children[1].innerHTML;
+      let id = name.toLowerCase().split(' ').join('-');
+      createModal(target, name, id);
+      createModalList(id, data.filter(el => el.type === id));
+    }
+  })
+
+  function createModal(target, name, id) {
+    document.body.insertAdjacentHTML(
+      'beforeend',
+      '<div class="modal" id="' + target + '" tabindex="-1" role="dialog" aria-labelledby="' + target + '" aria-hidden="true">' +
+        '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">' +
+          '<div class="modal-content">' +
+            '<div class="modal-header">' +
+              '<h5 class="modal-title" id="' + target + 'Title">' + name + ' views</h5>' +
+              '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+                '<span aria-hidden="true">&times;</span>' +
+              '</button>' +
+            '</div>' +
+            '<div class="modal-body">' +
+              '<ul class="list-group list-group-flush" id="' + id + '-ul">' +
+              '</ul>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function createModalList(id, data) {
+    let parent = document.getElementById(id + '-ul');
+    if(data.length === 0) {
+      parent.insertAdjacentHTML('beforeend', '<li class="list-group-item"> No items found </li>');
+    } else {
+      data.forEach(el => {
+        parent.insertAdjacentHTML('beforeend',
+          '<a href="/view/' + el.type + '/' + el.name + '" class="list-group-item list-group-item-action">' +
+            el.name + '<span class="badge badge-pill badge-secondary float-right">' + el.db + '</span>' +
+          '</a>'
+        )
+      })
+    }
+  }
+</script>
+
+<%- include ../footer.ejs -%>
