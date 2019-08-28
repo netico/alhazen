@@ -1,0 +1,211 @@
+<%- include('./template/header')%>
+
+<div class="container">
+  <h1 class="display-2 text-center mt-5">Select the view</h1>
+  <hr class="w-50">
+  <div class="row px-5 px-md-0">
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-table" data-toggle="modal" data-target="#straighttableModal">
+          <i class="fas fa-table fa-2x "></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Straight Table</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-bar" data-toggle="modal" data-target="#barchartModal">
+          <i class="fas fa-chart-bar fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Bar Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-pie" data-toggle="modal" data-target="#piechartModal">
+          <i class="fas fa-chart-pie fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Pie Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-line" data-toggle="modal" data-target="#linechartModal">
+          <i class="fas fa-chart-line fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Line Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-area" data-toggle="modal" data-target="#areachartModal">
+          <i class="fas fa-chart-area fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Area Chart</p>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 p-4">
+        <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-scatter" data-toggle="modal" data-target="#scatterchartModal">
+          <i class="fas fa-project-diagram fa-2x"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0">Scatter Chart</p>
+        </div>
+    </div>
+  </div>
+</div>
+
+<%# Modal %>
+<%# Straigth Table %>
+<div class="modal" id="straighttableModal" tabindex="-1" role="dialog" aria-labelledby="straighttableModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="straighttableModalTitle">Straight Table views</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush">
+          <%_ let straightTableList = sheets.filter(e => e.type === 'straight-table'); _%>
+          <%_ if (straightTableList.length > 0) { _%>
+            <%_ for (elem of straightTableList) { _%>
+              <a href="<%='/views/' + elem.type + '/' + elem.name%>" class="list-group-item list-group-item-action"><%=elem.name%><span class="badge badge-pill badge-secondary float-right"><%=elem.db%></span></a>
+            <%_ } _%>
+          <%_ } else { _%>
+            <li class="list-group-item"> No items found </li>
+          <%_ }; _%>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Bar Chart %>
+<div class="modal" id="barchartModal" tabindex="-1" role="dialog" aria-labelledby="barchartModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="barchartModalTitle">Bar Chart views</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush">
+          <%_ let barChartList = sheets.filter(e => e.type === 'bar-chart'); _%>
+          <%_ if (barChartList.length > 0) { _%>
+            <%_ for (elem of barChartList) { _%>
+              <a href="<%='/views/' + elem.type + '/' + elem.name%>" class="list-group-item list-group-item-action"><%=elem.name%><span class="badge badge-pill badge-secondary float-right"><%=elem.db%></span></a>
+            <%_ } _%>
+          <%_ } else { _%>
+            <li class="list-group-item"> No items found </li>
+          <%_ }; _%>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Pie Chart %>
+<div class="modal" id="piechartModal" tabindex="-1" role="dialog" aria-labelledby="piechartModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="piechartModalTitle">Pie Chart views</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush">
+          <%_ let pieChartList = sheets.filter(e => e.type === 'pie-chart'); _%>
+          <%_ if (pieChartList.length > 0) { _%>
+            <%_ for (elem of pieChartList) { _%>
+              <a href="<%='/views/' + elem.type + '/' + elem.name%>" class="list-group-item list-group-item-action">
+                <%=elem.name%><span class="badge badge-pill badge-secondary float-right"><%=elem.db%></span>
+              </a>
+            <%_ } _%>
+          <%_ } else { _%>
+            <li class="list-group-item"> No items found </li>
+          <%_ }; _%>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Line Chart %>
+<div class="modal" id="linechartModal" tabindex="-1" role="dialog" aria-labelledby="linechartModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="linechartModalTitle">Line Chart views</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush">
+          <%_ let lineChartList = sheets.filter(e => e.type === 'line-chart'); _%>
+          <%_ if (lineChartList.length > 0) { _%>
+            <%_ for (elem of lineChartList) { _%>
+              <a href="<%='/views/' + elem.type + '/' + elem.name%>" class="list-group-item list-group-item-action">
+                <%=elem.name%><span class="badge badge-pill badge-secondary float-right"><%=elem.db%></span>
+              </a>
+            <%_ } _%>
+          <%_ } else { _%>
+            <li class="list-group-item"> No items found </li>
+          <%_ }; _%>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Area Chart %>
+<div class="modal" id="areachartModal" tabindex="-1" role="dialog" aria-labelledby="areachartModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="areachartModalTitle">Area Chart views</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush">
+          <%_ let areaChartList = sheets.filter(e => e.type === 'area-chart'); _%>
+          <%_ if (areaChartList.length > 0) { _%>
+            <%_ for (elem of areaChartList) { _%>
+              <a href="<%='/views/' + elem.type + '/' + elem.name%>" class="list-group-item list-group-item-action">
+                <%=elem.name%><span class="badge badge-pill badge-secondary float-right"><%=elem.db%></span>
+              </a>
+            <%_ } _%>
+          <%_ } else { _%>
+            <li class="list-group-item"> No items found </li>
+          <%_ }; _%>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Scatter Chart %>
+<div class="modal" id="scatterchartModal" tabindex="-1" role="dialog" aria-labelledby="scatterchartModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="scatterchartModalTitle">Scatter Chart views</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul class="list-group list-group-flush">
+          <%_ let scatterChartList = sheets.filter(e => e.type === 'scatter-chart'); _%>
+          <%_ if (scatterChartList.length > 0) { _%>
+            <%_ for (elem of scatterChartList) { _%>
+              <a href="<%='/views/' + elem.type + '/' + elem.name%>" class="list-group-item list-group-item-action">
+                <%=elem.name%><span class="badge badge-pill badge-secondary float-right"><%=elem.db%></span>
+              </a>
+            <%_ } _%>
+          <%_ } else { _%>
+            <li class="list-group-item"> No items found </li>
+          <%_ }; _%>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('./template/footer')%>

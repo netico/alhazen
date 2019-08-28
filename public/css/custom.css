@@ -12,9 +12,6 @@
   --viol: rgba(123, 52, 181, 1);
 }
 
-nav + main {
-  margin-top: 56px;
-}
 
 .card-home:hover {
   transition: .2s;
