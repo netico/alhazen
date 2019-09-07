@@ -88,9 +88,15 @@ module.exports = {
         return;
       }
       csv({ delimiter: ';' }).fromFile(file).then((jsonObj) => {
-        const data = chartLib[type.split('-').join('')](jsonObj);
+        const data = chartLib[type.split('-').join('')](jsonObj, sheets[index]);
         res.status(200).render('views_detail', {
-          type, name, sheets: sheetsList, nav, title, data: JSON.stringify(data), error: undefined,
+          type,
+          name,
+          sheets: sheetsList,
+          nav,
+          title,
+          data: JSON.stringify(data.result),
+          error: data.error,
         });
       });
     });

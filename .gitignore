@@ -64,5 +64,6 @@ typings/
 analytics.js.geany
 
 db
-config
+config/index.js
 .eslintrc*
+.vscode
