@@ -13,6 +13,7 @@ module.exports = {
     stacked: false,
     sortLabel: false,
     stepSize: 0,
+    beginAtZero: true,
   },
   'line-chart': {
     serieField: '',
@@ -27,5 +28,18 @@ module.exports = {
     borderWidth: 3,
     sortLabel: false,
     stepSize: 0,
+    beginAtZero: true,
+  },
+  'pie-chart': {
+    serieField: '',
+    trendBy: '',
+    legendPosition: 'top',
+    colorPalette: 1,
+    backgroundAlpha: 1,
+    borderAlpha: 1,
+    borderWidth: 3,
+    defaultBorder: true,
+    sortLabel: false,
+    doughnut: false,
   },
 };
