@@ -111,3 +111,27 @@
 .smaller-text {
   font-size: 90% !important;
 }
+
+.side-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #ccc;
+  border-right: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  color: #000;
+  font-size: 1.5em;
+  padding: 2px 14px;
+}
+
+.side-btn > i {
+  transition: .5s;
+}
+
+.side-btn:hover {
+  cursor: pointer;
+}
+
+.side-btn.open > i {
+  transform: rotate(180deg);
+}
