@@ -2,6 +2,10 @@ module.exports = {
   // HTTP server
   server_port: 3000,
   server_host: 'localhost',
+  // Token secret
+  secret: '',
+  // Google oauth
+  CLIENT_ID: '',
   // Databases
   connectionString: {
     db_name_1: '',

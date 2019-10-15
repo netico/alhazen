@@ -18,10 +18,14 @@
     "license": "SEE LICENSE IN LICENSE",
     "dependencies": {
         "body-parser": "^1.18.2",
+        "cookie-parser": "^1.4.4",
         "csvtojson": "^2.0.8",
         "ejs": "^2.5.7",
         "express": "^4.16.2",
-        "lodash": "^4.17.15",
+        "express-validator": "^6.2.0",
+        "google-auth-library": "^5.4.0",
+        "jsonwebtoken": "^8.5.1",
+        "mariadb": "^2.1.1",
         "pg": "^7.4.3"
     },
     "devDependencies": {

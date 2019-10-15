@@ -63,7 +63,7 @@ module.exports = {
 
   index: (req, res) => {
     const sheetsList = getViewSheets();
-    res.render('views_home', { sheets: sheetsList, nav });
+    res.render('views_home', { sheets: sheetsList, nav, user: req.user });
   },
 
   displayChart: (req, res) => {
@@ -83,7 +83,7 @@ module.exports = {
       if (err) {
         const error = `<p class="alert alert-primary">Local file not available. Please, try to <a href="/views/${type}/${name}/reload" class="alert-link">reload data</a>.</p>`;
         res.status(404).render('views_detail', {
-          type, name, sheets: sheetsList, nav, error, title,
+          type, name, sheets: sheetsList, nav, error, title, user: req.user,
         });
         return;
       }
@@ -95,6 +95,7 @@ module.exports = {
           sheets: sheetsList,
           nav,
           title,
+          user: req.user,
           data: JSON.stringify(data.result),
           error: data.error,
         });
@@ -126,7 +127,7 @@ module.exports = {
         if (err) {
           const error = '<p class="alert alert-danger">Server error. Please, retry later.</p>';
           res.status(503).render('views_detail', {
-            type, name, sheets: sheetsList, nav, title, error,
+            type, name, sheets: sheetsList, nav, title, error, user: req.user,
           });
           return;
         }
@@ -135,7 +136,7 @@ module.exports = {
     } catch (e) {
       const error = '<p class="alert alert-danger">Server not reachable. Please, retry later.</p>';
       res.status(503).render('views_detail', {
-        type, name, sheets: sheetsList, nav, title, error,
+        type, name, sheets: sheetsList, nav, title, error, user: req.user,
       });
     }
   },
@@ -146,7 +147,7 @@ module.exports = {
     res.header('Content-type: text/csv');
     res.download(file, 'download.csv', (err) => {
       if (err) {
-        res.status(404).render('notfound', { error: 'Csv file not available. Please, try to reload data', nav });
+        res.status(404).render('notfound', { error: 'Csv file not available. Please, try to reload data', nav, user: req.user });
       }
     });
   },
