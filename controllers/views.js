@@ -2,15 +2,44 @@ const { Client } = require('pg');
 const csv = require('csvtojson');
 const fs = require('fs');
 const path = require('path');
-const { sheets, connectionString } = require('../config');
+const mariadb = require('mariadb');
+const { usersDb } = require('../config');
 const chartLib = require('../lib/views');
 
 const nav = 'views';
 
-function getViewSheets(type = null) {
-  const cleanSheet = sheets.map(e => ({ type: e.type, name: e.name, db: e.db }));
-  if (type) { return cleanSheet.filter(el => el.type === type); }
-  return cleanSheet;
+async function getViewSheets(userId, type = null) {
+  const conn = await mariadb.createConnection(usersDb);
+  const rows = await conn.query(
+    `SELECT 
+      v.view_name as viewName,
+      v.view_api as viewApi,
+      v.view_query as viewQuery,
+      v.description as viewDescr,
+      v.settings as settings,
+      t.type_api_name as typeApi,
+      t.type_name as typeName,
+      d.db_name as dbName,
+      d.connection_string as dbString
+    FROM views v
+    JOIN views_users p
+      ON v.view_id = p.view_id
+    JOIN views_types t
+      ON v.type = t.id
+    JOIN dbs d
+      ON v.source_db = d.id
+    WHERE p.user_id = ? AND v.active = 1;`,
+    userId,
+  );
+  conn.end();
+  if (rows.length > 0) {
+    let result = rows;
+    if (type) {
+      result = rows.filter(e => e.typeApi === type);
+    }
+    return result;
+  }
+  return [];
 }
 
 function json2array(json) {
@@ -61,40 +90,53 @@ function createCsv(res) {
 
 module.exports = {
 
-  index: (req, res) => {
-    const sheetsList = getViewSheets();
-    res.render('views_home', { sheets: sheetsList, nav, user: req.user });
+  index: async (req, res) => {
+    try {
+      const sheetsList = await getViewSheets(req.user.id);
+      res.render('views_home', { sheets: sheetsList, nav, user: req.user });
+      return;
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
   },
 
-  displayChart: (req, res) => {
+  displayChart: async (req, res) => {
     const { type, name } = req.params;
-    const index = sheets.findIndex(e => e.type === type && e.name === name);
+    let sheetsList;
+    try {
+      sheetsList = await getViewSheets(req.user.id, type);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+      return;
+    }
+
+    const index = sheetsList.findIndex(e => e.viewApi === name && e.typeApi === type);
     if (index === -1) {
       res.redirect('/views');
       return;
     }
-    const sheetsList = getViewSheets(type);
-    const file = `./db/${name}-${type}.csv`;
-    const title = type.split('-').reduce((tot, el) => {
-      const str = el[0].toUpperCase() + el.slice(1, el.length);
-      return `${tot} ${str}`;
-    }, '').trim();
+
+    sheetsList[index].settings = JSON.parse(sheetsList[index].settings);
+
+    const file = `./db/${name}_${type}.csv`;
     fs.access(file, (err) => {
       if (err) {
         const error = `<p class="alert alert-primary">Local file not available. Please, try to <a href="/views/${type}/${name}/reload" class="alert-link">reload data</a>.</p>`;
         res.status(404).render('views_detail', {
-          type, name, sheets: sheetsList, nav, error, title, user: req.user,
+          type, name, sheets: sheetsList, nav, error, user: req.user,
         });
         return;
       }
       csv({ delimiter: ';' }).fromFile(file).then((jsonObj) => {
-        const data = chartLib[type.split('-').join('')](jsonObj, sheets[index]);
+        const libType = type.split('-').join('');
+        const data = chartLib[libType](jsonObj, sheetsList[index]);
         res.status(200).render('views_detail', {
           type,
           name,
           sheets: sheetsList,
           nav,
-          title,
           user: req.user,
           data: JSON.stringify(data.result),
           error: data.error,
@@ -105,29 +147,34 @@ module.exports = {
 
   reloadData: async (req, res) => {
     const { type, name } = req.params;
-    const index = sheets.findIndex(e => e.type === type && e.name === name);
+    let sheetsList;
+    try {
+      sheetsList = await getViewSheets(req.user.id, type);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+      return;
+    }
+
+    const index = sheetsList.findIndex(e => e.viewApi === name && e.typeApi === type);
     if (index === -1) {
       res.redirect('/views');
       return;
     }
-    const sheetsList = getViewSheets(type);
-    const title = type.split('-').reduce((tot, el) => {
-      const str = el[0].toUpperCase() + el.slice(1, el.length);
-      return `${tot} ${str}`;
-    }, '').trim();
+
     try {
       const client = new Client({
-        connectionString: connectionString[sheets[index].db],
+        connectionString: sheetsList[index].dbString,
       });
       await client.connect();
-      const result = await client.query(sheets[index].query);
-      const file = `./db/${name}-${type}.csv`;
+      const result = await client.query(sheetsList[index].viewQuery);
+      const file = `./db/${name}_${type}.csv`;
       const data = createCsv(result);
       fs.writeFile(file, data, (err) => {
         if (err) {
           const error = '<p class="alert alert-danger">Server error. Please, retry later.</p>';
           res.status(503).render('views_detail', {
-            type, name, sheets: sheetsList, nav, title, error, user: req.user,
+            type, name, sheets: sheetsList, nav, error, user: req.user,
           });
           return;
         }
@@ -136,14 +183,14 @@ module.exports = {
     } catch (e) {
       const error = '<p class="alert alert-danger">Server not reachable. Please, retry later.</p>';
       res.status(503).render('views_detail', {
-        type, name, sheets: sheetsList, nav, title, error, user: req.user,
+        type, name, sheets: sheetsList, nav, error, user: req.user,
       });
     }
   },
 
   downloadCsv: (req, res) => {
     const { type, name } = req.params;
-    const file = path.join(__dirname, `../db/${name}-${type}.csv`);
+    const file = path.join(__dirname, `../db/${name}_${type}.csv`);
     res.header('Content-type: text/csv');
     res.download(file, 'download.csv', (err) => {
       if (err) {
