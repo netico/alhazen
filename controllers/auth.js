@@ -24,19 +24,18 @@ module.exports = {
       const {
         email, name, picture, given_name, family_name,
       } = await googleTokenVerify(idToken);
-      const pool = mariadb.createPool(usersDb);
-      let conn;
       try {
-        conn = await pool.getConnection();
+        const conn = await mariadb.createConnection(usersDb);
         // Query: return user email and check active status
         const rows = await conn.query('SELECT user_id, email FROM users WHERE email = ? AND active = 1', email);
+        conn.end();
         if (rows.length === 1) {
           // JWT Playload
           const playload = {
             id: rows[0].user_id,
-            full_name: name,
-            f_name: given_name,
-            l_name: family_name,
+            fullName: name,
+            firstName: given_name,
+            lastName: family_name,
             email,
             picture,
           };
@@ -52,11 +51,16 @@ module.exports = {
         }
         // segnalare errore
         res.sendStatus(500);
+        return;
       } catch (err) {
+        conn.end();
         console.log(err);
+        res.sendStatus(500);
+        return;
       }
     } catch (error) {
       console.log(error);
+      res.sendStatus(500);
     }
   },
 
