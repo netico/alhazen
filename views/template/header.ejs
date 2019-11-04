@@ -37,9 +37,11 @@
           <li class="nav-item <%=nav === 'views' ? 'active' : ''%>">
             <a class="nav-link" href="/views">Views</a>
           </li>
-          <li class="nav-item <%=nav === 'settings' ? 'active' : ''%>">
-            <a class="nav-link" href="#">Settings</a>
-          </li>
+          <%_ if (user.role === 'admin') { _%>
+            <li class="nav-item <%=nav === 'settings' ? 'active' : ''%>">
+              <a class="nav-link" href="#">Settings</a>
+            </li>
+          <%_ } _%>
         </ul>
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
