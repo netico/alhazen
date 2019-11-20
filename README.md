@@ -1,6 +1,7 @@
-# Analytics Made Easy
+# Eris
+## Analytics Made Easy
 
-## Credits
+### Credits
 * Express - http://expressjs.com
 * EJS - http://ejs.co
 * node-postgres - https://node-postgres.com
@@ -9,11 +10,11 @@
 * Chart.js - http://www.chartjs.org
 * Lodash - https://lodash.com
 
-## Setup
+### Setup
     
     npm install
 
-## Usage
+### Usage
 
     npm run start 
 
