@@ -104,8 +104,8 @@
 
 .sidebar {
   position: sticky;
-  top: 56px;
-  height: calc(100vh - 56px);
+  top: 62px;
+  height: calc(100vh - 62px);
 }
 
 .smaller-text {
@@ -134,4 +134,10 @@
 
 .side-btn.open > i {
   transform: rotate(180deg);
+}
+
+.colorBox {
+  width: 120px;
+  height: 120px;
+  background: var(--eucalyptus);
 }
