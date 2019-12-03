@@ -27,7 +27,7 @@
 
   <body>
     <nav class="navbar sticky-top navbar-expand-sm navbar-dark bg-dark">
-      <a class="navbar-brand" href="/views">Eris Analytics</a>
+      <a class="navbar-brand" href="/views">Eris</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -39,7 +39,7 @@
           </li>
           <%_ if (user.role === 'admin') { _%>
             <li class="nav-item <%=nav === 'settings' ? 'active' : ''%>">
-              <a class="nav-link" href="#">Settings</a>
+              <a class="nav-link" href="/views/settings">Settings</a>
             </li>
           <%_ } _%>
         </ul>
