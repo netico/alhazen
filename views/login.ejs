@@ -32,6 +32,7 @@
             </div>
             <img id="google-signin" class="d-none" style="cursor: pointer;" src="/images/google-logo/2x/btn_google_signin_dark_normal_web@2x.png" width="220px" alt="">
           </div>
+          <small id="errorMsg" class="text-danger"></small>
         </div>
       </div>
     </div>
@@ -52,15 +53,30 @@
           response_type: 'id_token permission',
           prompt: 'select_account',
         }, function(response) {
-          console.log(response);
           if (response.error) {
             return;
           }
           const idToken = response.id_token;
           const xhr = new XMLHttpRequest();
           xhr.onreadystatechange = function () {
-            if (this.readyState === 4 && this.status === 201) {
-              window.location.href = '/views';
+            if (this.readyState === 4) {
+              let errorStr;
+              switch (this.status) {
+              case 201:
+                window.location.href = '/views';
+                return;
+                break;
+              case 401:
+                errorStr = "You don't have the permission to view this project.<br>Please, contact your admin"
+                break;
+              case 500:
+                errorStr = "Server Error. Please, contact your admin"
+                break;
+              default:
+                errorStr = "An error occured. Please, contact your admin"
+                break;
+              }
+              document.getElementById('errorMsg').innerHTML = errorStr;
             }
           }
           xhr.open('POST', '/login');
