@@ -3,10 +3,47 @@ const csv = require('csvtojson');
 const fs = require('fs');
 const path = require('path');
 const mariadb = require('mariadb');
+const { validationResult } = require('express-validator');
+
 const { usersDb } = require('../config');
 const chartLib = require('../lib/views');
+const { colors } = require('../config/colors');
 
 const nav = 'views';
+
+async function getAllSheets() {
+  const conn = await mariadb.createConnection(usersDb);
+  const rows = await conn.query(
+    `SELECT 
+      v.view_name as viewName,
+      v.view_api as viewApi,
+      v.view_query as viewQuery,
+      v.description as viewDescr,
+      v.settings as settings,
+      v.active as active,
+      t.type_api_name as typeApi,
+      t.type_name as typeName,
+      d.db_name as dbName,
+      d.connection_string as dbString
+    FROM views v
+    JOIN views_types t
+      ON v.type = t.id
+    JOIN dbs d
+      ON v.source_db = d.id;`,
+  );
+  conn.end();
+  if (rows.length > 0) {
+    const result = {};
+    rows.forEach((sheet) => {
+      if (result[sheet.typeApi] === undefined) {
+        result[sheet.typeApi] = [];
+      }
+      result[sheet.typeApi].push(sheet);
+    });
+    return result;
+  }
+  return [];
+}
 
 async function getViewSheets(userId, type = null) {
   const conn = await mariadb.createConnection(usersDb);
@@ -17,6 +54,7 @@ async function getViewSheets(userId, type = null) {
       v.view_query as viewQuery,
       v.description as viewDescr,
       v.settings as settings,
+      v.active as active,
       t.type_api_name as typeApi,
       t.type_name as typeName,
       d.db_name as dbName,
@@ -40,6 +78,21 @@ async function getViewSheets(userId, type = null) {
     return result;
   }
   return [];
+}
+
+async function getDatabases() {
+  const conn = await mariadb.createConnection(usersDb);
+  const rows = await conn.query(
+    `SELECT 
+      id,
+      db_name
+    FROM dbs`,
+  );
+  conn.end();
+  if (rows.length > 0) {
+    return rows;
+  }
+  throw new Error('Error select dbs');
 }
 
 function json2array(json) {
@@ -197,6 +250,86 @@ module.exports = {
         res.status(404).render('notfound', { error: 'Csv file not available. Please, try to reload data', nav, user: req.user });
       }
     });
+  },
+
+  settings: async (req, res) => {
+    let sheetsList;
+    try {
+      sheetsList = await getAllSheets();
+    } catch (error) {
+      res.sendStatus(500);
+      return;
+    }
+    res.render('settings', {
+      type: null,
+      name: null,
+      nav: 'settings',
+      user: req.user,
+      sheets: sheetsList,
+    });
+  },
+
+  settingsView: async (req, res) => {
+    const { type, name } = req.params;
+    let sheetsList;
+    let dbs;
+    try {
+      sheetsList = await getAllSheets();
+      dbs = await getDatabases();
+    } catch (error) {
+      res.sendStatus(500);
+      return;
+    }
+    const sheet = sheetsList[type].find(el => el.viewApi === name);
+    res.render('settings', {
+      type,
+      name,
+      nav: 'settings',
+      user: req.user,
+      sheets: sheetsList,
+      sheet,
+      colors: JSON.stringify(colors),
+      dbs,
+    });
+  },
+
+  updateView: async (req, res) => {
+    const { name } = req.params;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(422).json({ errors: errors.array() });
+      return;
+    }
+    const { info, settings } = req.body;
+    try {
+      const conn = await mariadb.createConnection(usersDb);
+      await conn.query(
+        `UPDATE 
+          views
+        SET 
+          view_name = ?, 
+          description = ?, 
+          active = ?, 
+          view_query = ?, 
+          source_db = ?, 
+          settings = ?
+        WHERE 
+          view_api = ?;`,
+        [
+          info.viewName,
+          info.description,
+          info.active,
+          info.view_query,
+          info.source_db,
+          JSON.stringify(settings),
+          name,
+        ],
+      );
+    } catch (e) {
+      res.sendStatus(500);
+      return;
+    }
+    res.sendStatus(200);
   },
 
 };
