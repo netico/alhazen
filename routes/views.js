@@ -56,7 +56,7 @@ router.put('/:type/:name/update', adminAccess, [
     .not()
     .isEmpty()
     .bail()
-    .isIn(['top', 'bottom', 'left', 'rigth']),
+    .isIn(['top', 'bottom', 'left', 'right']),
   check('settings.stepSize').if((value, { req }) => req.params.type !== 'straight-table' && req.params.type !== 'pie-chart').exists().bail()
     .toFloat()
     .isFloat({ min: 0 }),
