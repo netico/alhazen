@@ -80,6 +80,33 @@ async function getViewSheets(userId, type = null) {
   return [];
 }
 
+async function getUsers(viewApi) {
+  const conn = await mariadb.createConnection(usersDb);
+  const rows = await conn.query(
+    `SELECT
+      u.user_id,
+      u.f_name,
+      u.l_name,
+      vu.view_id
+    FROM users u
+    LEFT JOIN (
+      SELECT *
+      FROM views_users 
+      WHERE view_id = (
+        SELECT view_id
+        FROM views
+        WHERE view_api = ?)
+    ) as vu
+    ON u.user_id = vu.user_id;`,
+    viewApi,
+  );
+  conn.end();
+  if (rows.length > 0) {
+    return rows;
+  }
+  throw new Error('Error select users');
+}
+
 async function getDatabases() {
   const conn = await mariadb.createConnection(usersDb);
   const rows = await conn.query(
@@ -273,9 +300,11 @@ module.exports = {
     const { type, name } = req.params;
     let sheetsList;
     let dbs;
+    let users;
     try {
       sheetsList = await getAllSheets();
       dbs = await getDatabases();
+      users = await getUsers(name);
     } catch (error) {
       res.sendStatus(500);
       return;
@@ -290,6 +319,10 @@ module.exports = {
       sheet,
       colors: JSON.stringify(colors),
       dbs,
+      users: {
+        chips: users.filter(e => e.view_id !== null).map((e) => { delete e.view_id; return e; }),
+        list: users.filter(e => e.view_id === null).map((e) => { delete e.view_id; return e; }),
+      },
     });
   },
 
@@ -301,34 +334,47 @@ module.exports = {
       return;
     }
     const { info, settings } = req.body;
+    const users = info.users.map(e => [name, e.user_id]);
+    let conn;
     try {
-      const conn = await mariadb.createConnection(usersDb);
-      await conn.query(
-        `UPDATE 
-          views
-        SET 
-          view_name = ?, 
-          description = ?, 
-          active = ?, 
-          view_query = ?, 
-          source_db = ?, 
-          settings = ?
-        WHERE 
-          view_api = ?;`,
-        [
-          info.viewName,
-          info.description,
-          info.active,
-          info.view_query,
-          info.source_db,
-          JSON.stringify(settings),
-          name,
-        ],
-      );
-    } catch (e) {
+      conn = await mariadb.createConnection(usersDb);
+      try {
+        await conn.beginTransaction();
+        await conn.query('DELETE FROM views_users WHERE view_id = (SELECT view_id FROM views WHERE view_api = ?)', name);
+        await conn.batch('INSERT INTO views_users(view_id, user_id) VALUES((SELECT view_id FROM views WHERE view_api = ?),?)', users);
+        await conn.query(
+          `UPDATE
+            views
+          SET
+            view_name = ?,
+            description = ?,
+            active = ?,
+            view_query = ?,
+            source_db = ?,
+            settings = ?
+          WHERE
+            view_api = ?;`,
+          [
+            info.viewName,
+            info.description,
+            info.active,
+            info.view_query,
+            info.source_db,
+            JSON.stringify(settings),
+            name,
+          ],
+        );
+      } catch (e) {
+        await conn.rollback();
+        res.sendStatus(500);
+        return;
+      }
+    } catch (err) {
       res.sendStatus(500);
       return;
     }
+    await conn.commit();
+    conn.end();
     res.sendStatus(200);
   },
 
