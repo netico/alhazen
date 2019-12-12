@@ -84,7 +84,7 @@
                 <div id="person-list" class="d-flex flex-wrap mt-3 pt-3 position-relative">
                   <%_ for (el of users.chips) { _%>
                     <div class="chip mr-2 mb-2" data-id='<%=el.user_id%>'>
-                      <img src="https://www.w3schools.com/howto/img_avatar2.png" alt="Person" width="96" height="96">
+                      <img src="<%=(el.picture_link) ? el.picture_link : '/images/user.png' %>" alt="Person" width="96" height="96">
                       <%=el.f_name%> <%=el.l_name%><span class="closebtn" onclick="removeChip(this)">&times;</span>
                     </div>
                   <%_ } _%>
@@ -409,7 +409,7 @@
         input.insertAdjacentHTML(
           'beforebegin', 
           `<div class="chip mr-2 mb-2" data-id='${personList[index].user_id}'>
-            <img src="https://www.w3schools.com/howto/img_avatar2.png" alt="Person" width="96" height="96">
+            <img src="${(personList[index].picture_link) ? personList[index].picture_link : '/images/user.png' }" alt="Person" width="96" height="96">
             ${value}<span class="closebtn" onclick="removeChip(this)">&times;</span>
           </div>`);
         const personObj = personList.splice(index, 1)[0];

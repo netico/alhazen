@@ -87,6 +87,7 @@ async function getUsers(viewApi) {
       u.user_id,
       u.f_name,
       u.l_name,
+      u.picture_link,
       vu.view_id
     FROM users u
     LEFT JOIN (

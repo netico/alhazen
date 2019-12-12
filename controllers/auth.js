@@ -28,7 +28,6 @@ module.exports = {
         const conn = await mariadb.createConnection(usersDb);
         // Query: return user email and check active status
         const rows = await conn.query('SELECT user_id, email, role FROM users WHERE email = ? AND active = 1', email);
-        conn.end();
         if (rows.length === 1) {
           // JWT Playload
           const playload = {
@@ -40,6 +39,12 @@ module.exports = {
             picture,
             role: rows[0].role,
           };
+          try {
+            await conn.query('UPDATE users SET picture_link = ? WHERE user_id = ?', [playload.picture, playload.id]);
+          } catch (error) {
+            // log
+            console.log(error);
+          }
           const token = jwt.sign(playload, secret, { expiresIn: '1 h' });
           res.status(201)
             .cookie('access_token', `Bearer ${token}`, {
@@ -50,6 +55,7 @@ module.exports = {
             }).send();
           return;
         }
+        conn.end();
         // segnalare errore
         res.sendStatus(500);
         return;
