@@ -60,7 +60,6 @@
       <%_ } else { _%>
       <div class="container pt-3">
         <h1 class="display-4">Update: <%=sheet.viewName%></h1>
-        <hr>
         <div>
           <form id="form">
             <%# Info VIEW %>
@@ -77,9 +76,27 @@
                   <input type="text" id="apiName" class="form-control-plaintext" readonly placeholder="-" value="<%=sheet.viewApi%>">
                 </div>
               </div>
-              <div class="custom-control custom-switch my-4">
+              <div class="custom-control custom-switch my-4 mb-4">
                 <input type="checkbox" class="custom-control-input infoForm" id="activeView" name="active" <%=(sheet.active) ? 'checked' : ''%>>
                 <label class="custom-control-label" for="activeView">Active</label>
+              </div>
+              <div class="px-5 mb-4">
+                <div id="person-list" class="d-flex flex-wrap mt-3 pt-3 position-relative">
+                  <%_ for (el of users.chips) { _%>
+                    <div class="chip mr-2 mb-2" data-id='<%=el.user_id%>'>
+                      <img src="https://www.w3schools.com/howto/img_avatar2.png" alt="Person" width="96" height="96">
+                      <%=el.f_name%> <%=el.l_name%><span class="closebtn" onclick="removeChip(this)">&times;</span>
+                    </div>
+                  <%_ } _%>
+                  <input id="inputPerson" autocomplete="on" placeholder="test" list="datalistPerson" class="flex-fill mb-2" type="text">
+                  <p class="text-secondary position-absolute" id="input-title">Insert who can access the view</p>
+                  <datalist id="datalistPerson">
+                    <%_ for (el of users.list) { _%>
+                      <option data-id="<%=el.user_id%>" value="<%=el.f_name%> <%=el.l_name%>"></option>
+                    <%_ } _%>
+                  </datalist>
+                </div>
+                <hr id="line-input" class="mt-1">
               </div>
               <div class="form-group row">
                 <div class="col">
@@ -106,7 +123,6 @@
             <%# Settings VIEW %>
             <%_ let settings = JSON.parse(sheet.settings); _%>
             <%_ if(type !== 'straight-table') { _%>
-            <hr>
             <h5 class="bg-dark text-white rounded-pill font-weight-normal py-3 px-4 my-4">View settings</h5>
             <div class="px-4 py-2">
 
@@ -322,6 +338,8 @@
       obj.settings[input.name] = (input.type === 'checkbox') ? input.checked : input.value;
     });
 
+    obj.info.users = personChips;
+
     const xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
       if (this.readyState == 4) {
@@ -352,6 +370,100 @@
     xhttp.setRequestHeader("Content-type", "application/json");
     xhttp.send(JSON.stringify(obj));
   });
+
+  // hr styling on focusing ----------------------------------------
+  document.getElementById('inputPerson').onfocusin = function () {
+    document.getElementById('line-input').classList.add('focused');
+  }
+  document.getElementById('inputPerson').onfocusout = function () {
+    document.getElementById('line-input').classList.remove('focused');
+  }
+  // ---------------------------------------------------------------
+
+  if (document.getElementsByClassName('chip').length) {
+    document.getElementById('input-title').classList.add('ontop');
+  }
+
+  const personList = <%-JSON.stringify(users.list)%>;
+  const personChips = <%-JSON.stringify(users.chips)%>;
+
+  let inputEmpty = false;
+  const input = document.getElementById('inputPerson');
+
+  input.addEventListener('keydown', event => {
+    if (event.key === "Backspace") {
+      if (!input.value) {
+        inputEmpty = true;
+        return;
+      }
+      inputEmpty = false;
+    }
+  });
+
+  input.addEventListener('keyup', event => {
+    let value = input.value;
+    if (event.key === "Enter") {
+      const index = personList.findIndex(e => `${e.f_name} ${e.l_name}` === value)
+      if (index !== -1) {
+        input.value = '';
+        input.insertAdjacentHTML(
+          'beforebegin', 
+          `<div class="chip mr-2 mb-2" data-id='${personList[index].user_id}'>
+            <img src="https://www.w3schools.com/howto/img_avatar2.png" alt="Person" width="96" height="96">
+            ${value}<span class="closebtn" onclick="removeChip(this)">&times;</span>
+          </div>`);
+        const personObj = personList.splice(index, 1)[0];
+        personChips.push(personObj);
+        document.querySelector(`option[data-id="${personObj.user_id}"]`).remove();
+        document.getElementById('input-title').classList.add('ontop');
+        return;
+      } else {
+        input.classList.add('text-danger');
+        return;
+      }
+    }
+    if (inputEmpty && event.key === "Backspace") {
+      if (document.getElementsByClassName('chip').length) {
+        const person = personChips.pop();
+        personList.push(person);
+        document.querySelector(`div[data-id='${person.user_id}'`).remove();
+        document.getElementById('datalistPerson').insertAdjacentHTML(
+          "beforeend",
+          `<option data-id="${person.user_id}" value="${person.f_name} ${person.l_name}"></option>`
+        )
+        if (chipLength === 0) {
+          document.getElementById('input-title').classList.remove('ontop');
+        }
+      }
+    }
+    input.classList.remove('text-danger');
+    return;
+  });
+
+  function removeChip(btnClose) {
+    const id = btnClose.parentElement.getAttribute('data-id');
+    const index = personChips.findIndex(e => e.user_id == id)
+    const person = personChips.splice(index, 1)[0];
+    personList.push(person);
+    btnClose.parentElement.remove();
+    document.getElementById('datalistPerson').insertAdjacentHTML(
+      "beforeend",
+      `<option data-id="${person.user_id}" value="${person.f_name} ${person.l_name}"></option>`
+    )
+    const chipLength = document.getElementsByClassName('chip').length;
+    if (chipLength === 0) {
+      document.getElementById('input-title').classList.remove('ontop');
+    }
+  }
+
+  document.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('keydown', event => {
+      if(event.key === "Enter") {
+        event.preventDefault();
+      }
+      return;
+    })
+  })
 
 </script>
 <%_ } _%>
