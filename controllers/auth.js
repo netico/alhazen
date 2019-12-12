@@ -56,16 +56,14 @@ module.exports = {
           return;
         }
         conn.end();
-        // segnalare errore
-        res.sendStatus(500);
+        // Unauthorized
+        res.sendStatus(401);
         return;
       } catch (err) {
-        console.log(err);
         res.sendStatus(500);
         return;
       }
     } catch (error) {
-      console.log(error);
       res.sendStatus(500);
     }
   },
