@@ -23,15 +23,16 @@
         "ejs": "^2.7.4",
         "express": "^4.17.1",
         "express-validator": "^6.3.0",
-        "google-auth-library": "^5.5.1",
+        "google-auth-library": "^5.7.0",
         "jsonwebtoken": "^8.5.1",
         "mariadb": "^2.1.4",
+        "mysql": "^2.17.1",
         "pg": "^7.14.0"
     },
     "devDependencies": {
         "eslint": "^5.16.0",
         "eslint-config-airbnb-base": "^13.2.0",
-        "eslint-plugin-import": "^2.18.2",
+        "eslint-plugin-import": "^2.19.1",
         "jshint": "^2.10.3",
         "nodemon": "^1.19.4"
     }
