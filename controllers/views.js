@@ -3,7 +3,6 @@ const csv = require('csvtojson');
 const fs = require('fs');
 const path = require('path');
 const mariadb = require('mariadb');
-const { validationResult } = require('express-validator');
 
 const { usersDb } = require('../config');
 const chartLib = require('../lib/views');
@@ -329,11 +328,6 @@ module.exports = {
 
   updateView: async (req, res) => {
     const { name } = req.params;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(422).json({ errors: errors.array() });
-      return;
-    }
     const { info, settings } = req.body;
     const users = info.users.map(e => [name, e.user_id]);
     let conn;
