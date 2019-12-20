@@ -1,4 +1,3 @@
-const { Client } = require('pg');
 const csv = require('csvtojson');
 const fs = require('fs');
 const path = require('path');
@@ -8,6 +7,7 @@ const { validationResult } = require('express-validator');
 const { usersDb } = require('../config');
 const chartLib = require('../lib/views');
 const { colors } = require('../config/colors');
+const dbConnectors = require('../lib/dbConnectors');
 
 const nav = 'views';
 
@@ -58,7 +58,8 @@ async function getViewSheets(userId, type = null) {
       t.type_api_name as typeApi,
       t.type_name as typeName,
       d.db_name as dbName,
-      d.connection_string as dbString
+      d.connection_string as dbString,
+      d.db_type as dbType
     FROM views v
     JOIN views_users p
       ON v.view_id = p.view_id
@@ -132,9 +133,8 @@ function json2array(json) {
   return result;
 }
 
-function createCsv(res) {
-  const { rows } = res;
-  const fields = json2array(res.fields);
+function createCsv(rows, rawFields) {
+  const fields = json2array(rawFields);
   let c = 0;
   let output = '';
   // Headers
@@ -242,15 +242,11 @@ module.exports = {
       res.redirect('/views');
       return;
     }
-
     try {
-      const client = new Client({
-        connectionString: sheetsList[index].dbString,
-      });
-      await client.connect();
-      const result = await client.query(sheetsList[index].viewQuery);
+      const sheet = sheetsList[index];
+      const result = await dbConnectors[sheet.dbType](sheet.dbString, sheet.viewQuery);
       const file = `./db/${name}_${type}.csv`;
-      const data = createCsv(result);
+      const data = createCsv(result.rows, result.fields);
       fs.writeFile(file, data, (err) => {
         if (err) {
           const error = '<p class="alert alert-danger">Server error. Please, retry later.</p>';
@@ -262,6 +258,7 @@ module.exports = {
         res.redirect(`/views/${type}/${name}`);
       });
     } catch (e) {
+      console.log(e);
       const error = '<p class="alert alert-danger">Server not reachable. Please, retry later.</p>';
       res.status(503).render('views_detail', {
         type, name, sheets: sheetsList, nav, error, user: req.user,
