@@ -22,11 +22,13 @@
         "csvtojson": "^2.0.10",
         "ejs": "^2.7.4",
         "express": "^4.17.1",
+        "express-http-context": "^1.2.3",
         "express-validator": "^6.3.0",
         "google-auth-library": "^5.5.1",
         "jsonwebtoken": "^8.5.1",
         "mariadb": "^2.1.4",
-        "pg": "^7.14.0"
+        "pg": "^7.14.0",
+        "winston": "^3.2.1"
     },
     "devDependencies": {
         "eslint": "^5.16.0",

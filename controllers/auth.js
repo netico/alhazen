@@ -1,8 +1,6 @@
 const jwt = require('jsonwebtoken');
 const mariadb = require('mariadb');
-// const { validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
-
 
 const { secret, usersDb, CLIENT_ID } = require('../config');
 
@@ -18,7 +16,25 @@ const googleTokenVerify = async (token) => {
 
 module.exports = {
 
-  login: async (req, res) => {
+  loginGet: (req, res) => {
+    if (req.cookies && req.cookies.access_token !== undefined) {
+      const token = req.cookies.access_token.split(' ')[1];
+      try {
+        const payload = jwt.verify(token, secret);
+        if (payload) {
+          res.redirect('/');
+          return;
+        }
+        res.render('login', { error: '' });
+        return;
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    res.render('login', { error: '' });
+  },
+
+  loginPost: async (req, res) => {
     const { idToken } = req.body;
     try {
       const {
@@ -88,14 +104,4 @@ module.exports = {
     }
     res.redirect('/login');
   },
-
-  verifyToken: (token) => {
-    try {
-      const decode = jwt.verify(token, secret);
-      return decode;
-    } catch (error) {
-      return false;
-    }
-  },
-
 };
