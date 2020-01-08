@@ -10,10 +10,9 @@ const { colors } = require('../config/colors');
 
 const nav = 'views';
 
-async function getAllSheets() {
-  const conn = await mariadb.createConnection(usersDb);
-  const rows = await conn.query(
-    `SELECT 
+async function getSheets(userId = null, type = null, filterActive = false, groupType = false) {
+  let queryStr = `
+    SELECT 
       v.view_name as viewName,
       v.view_api as viewApi,
       v.view_query as viewQuery,
@@ -25,58 +24,43 @@ async function getAllSheets() {
       d.db_name as dbName,
       d.connection_string as dbString
     FROM views v
-    JOIN views_types t
-      ON v.type = t.id
-    JOIN dbs d
-      ON v.source_db = d.id;`,
-  );
-  conn.end();
-  if (rows.length > 0) {
-    const result = {};
-    rows.forEach((sheet) => {
-      if (result[sheet.typeApi] === undefined) {
-        result[sheet.typeApi] = [];
-      }
-      result[sheet.typeApi].push(sheet);
-    });
-    return result;
-  }
-  return [];
-}
-
-async function getViewSheets(userId, type = null) {
-  const conn = await mariadb.createConnection(usersDb);
-  const rows = await conn.query(
-    `SELECT 
-      v.view_name as viewName,
-      v.view_api as viewApi,
-      v.view_query as viewQuery,
-      v.description as viewDescr,
-      v.settings as settings,
-      v.active as active,
-      t.type_api_name as typeApi,
-      t.type_name as typeName,
-      d.db_name as dbName,
-      d.connection_string as dbString
-    FROM views v
-    JOIN views_users p
-      ON v.view_id = p.view_id
     JOIN views_types t
       ON v.type = t.id
     JOIN dbs d
       ON v.source_db = d.id
-    WHERE p.user_id = ? AND v.active = 1;`,
-    userId,
-  );
-  conn.end();
-  if (rows.length > 0) {
-    let result = rows;
-    if (type) {
-      result = rows.filter(e => e.typeApi === type);
+  `;
+
+  if (userId) {
+    queryStr += ' JOIN views_users p ON v.view_id = p.view_id WHERE p.user_id = ?';
+    if (filterActive) {
+      queryStr += ' AND v.active = 1';
     }
-    return result;
+  } else if (filterActive) {
+    queryStr += ' WHERE v.active = 1';
   }
-  return [];
+
+  const conn = await mariadb.createConnection(usersDb);
+  let rows = await conn.query(queryStr, userId);
+  conn.end();
+
+  if (type) {
+    rows = rows.filter(e => e.typeApi === type);
+  }
+
+  let result = rows;
+
+  if (groupType) {
+    const obj = {};
+    result.forEach((sheet) => {
+      if (obj[sheet.typeApi] === undefined) {
+        obj[sheet.typeApi] = [];
+      }
+      obj[sheet.typeApi].push(sheet);
+    });
+    result = obj;
+  }
+
+  return result;
 }
 
 async function getUsers(viewApi) {
@@ -172,7 +156,7 @@ module.exports = {
 
   index: async (req, res) => {
     try {
-      const sheetsList = await getViewSheets(req.user.id);
+      const sheetsList = await getSheets(req.user.id, null, true);
       res.render('views_home', { sheets: sheetsList, nav, user: req.user });
       return;
     } catch (error) {
@@ -185,7 +169,7 @@ module.exports = {
     const { type, name } = req.params;
     let sheetsList;
     try {
-      sheetsList = await getViewSheets(req.user.id, type);
+      sheetsList = await getSheets(req.user.id, type, true);
     } catch (error) {
       console.log(error);
       res.sendStatus(500);
@@ -229,7 +213,7 @@ module.exports = {
     const { type, name } = req.params;
     let sheetsList;
     try {
-      sheetsList = await getViewSheets(req.user.id, type);
+      sheetsList = await getSheets(req.user.id, type, true);
     } catch (error) {
       console.log(error);
       res.sendStatus(500);
@@ -282,7 +266,7 @@ module.exports = {
   settings: async (req, res) => {
     let sheetsList;
     try {
-      sheetsList = await getAllSheets();
+      sheetsList = await getSheets(null, null, false, true);
     } catch (error) {
       res.sendStatus(500);
       return;
@@ -302,7 +286,7 @@ module.exports = {
     let dbs;
     let users;
     try {
-      sheetsList = await getAllSheets();
+      sheetsList = await getSheets(null, null, false, true);
       dbs = await getDatabases();
       users = await getUsers(name);
     } catch (error) {
