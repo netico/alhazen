@@ -47,8 +47,12 @@
           <span class="badge badge-pill badge-secondary">Available: <%=sheets.filter(e => e.typeApi === 'scatter-chart').length%></span>
         </div>
     </div>
-    
   </div>
+  <%_ if(error) { _%>
+    <div class="alert alert-danger m-5" role="alert">
+      <%=error%>
+    </div>
+  <%_ } _%>
 </div>
 
 <%# Modal %>

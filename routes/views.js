@@ -3,15 +3,17 @@ const express = require('express');
 const views = require('../controllers/views');
 const auth = require('../controllers/auth');
 const { validationMiddleware } = require('../config/validators/view');
+const logger = require('../config/logger');
 
 const router = express.Router();
 
 const adminAccess = (req, res, next) => {
   if (req.user.role === 'admin') {
-    next();
-    return;
+    logger.log('info', 'User %s has "admin" authorization', req.user.email);
+    return next();
   }
-  res.sendStatus(401);
+  logger.log('error', "Unauthorized! User %s doesn't have 'admin' authorization", req.user.email);
+  return res.sendStatus(401);
 };
 
 
