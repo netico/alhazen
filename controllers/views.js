@@ -1,4 +1,3 @@
-const { Client } = require('pg');
 const csv = require('csvtojson');
 const fs = require('fs');
 const path = require('path');
@@ -7,6 +6,7 @@ const mariadb = require('mariadb');
 const { usersDb } = require('../config');
 const chartLib = require('../lib/views');
 const { colors } = require('../config/colors');
+const dbConnectors = require('../lib/dbConnectors');
 const logger = require('../config/logger');
 
 const nav = 'views';
@@ -119,9 +119,8 @@ function json2array(json) {
   return result;
 }
 
-function createCsv(res) {
-  const { rows } = res;
-  const fields = json2array(res.fields);
+function createCsv(rows, rawFields) {
+  const fields = json2array(rawFields);
   let c = 0;
   let output = '';
   // Headers
@@ -240,15 +239,11 @@ module.exports = {
       res.redirect('/views');
       return;
     }
-
     try {
-      const client = new Client({
-        connectionString: sheetsList[index].dbString,
-      });
-      await client.connect();
-      const result = await client.query(sheetsList[index].viewQuery);
+      const sheet = sheetsList[index];
+      const result = await dbConnectors[sheet.dbType](sheet.dbString, sheet.viewQuery);
       const file = `./db/${name}_${type}.csv`;
-      const data = createCsv(result);
+      const data = createCsv(result.rows, result.fields);
       fs.writeFile(file, data, (err) => {
         if (err) {
           logger.log('error', 'Error on writing csv file "%s_%s". Error: %s', name, type, err.message);
