@@ -8,6 +8,7 @@ const chartLib = require('../lib/views');
 const { colors } = require('../config/colors');
 const logger = require('../config/logger');
 const dbConnectors = require('../lib/dbConnectors');
+const defaultSettings = require('../config/chartDefaultSett');
 
 const nav = 'views';
 
@@ -326,6 +327,7 @@ module.exports = {
         list: users.filter(e => e.view_id === null).map((e) => { delete e.view_id; return e; }),
       },
       error: '',
+      action: 'update',
     });
   },
 
@@ -377,4 +379,43 @@ module.exports = {
     return res.sendStatus(200);
   },
 
+  getCreate: async (req, res) => {
+    const { type } = req.params;
+    let dbs;
+    let users;
+    try {
+      dbs = await getDatabases();
+      users = await getUsers('null');
+    } catch (error) {
+      // Insert logger here
+      console.log(error);
+      res.sendStatus(500);
+      return;
+    }
+    res.status(200).render(
+      'create',
+      {
+        type,
+        nav: 'settings',
+        user: req.user,
+        sheet: {
+          viewName: '',
+          active: true,
+          dbName: '',
+          settings: JSON.stringify(defaultSettings[type]),
+        },
+        colors: JSON.stringify(colors),
+        dbs,
+        users: {
+          chips: users.filter(e => e.view_id !== null).map((e) => { delete e.view_id; return e; }),
+          list: users.filter(e => e.view_id === null).map((e) => { delete e.view_id; return e; }),
+        },
+        action: 'create',
+      },
+    );
+  },
+
+  postCreate: async (req, res) => {
+
+  },
 };

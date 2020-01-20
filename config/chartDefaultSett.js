@@ -1,6 +1,9 @@
 // Default settings
 
 module.exports = {
+  'straight-table': {
+
+  },
   'bar-chart': {
     serieField: '',
     trendBy: '',
