@@ -39,13 +39,15 @@
 }
 
 .chart-area:hover {
-  color: var(--bigfoot_feet) !important;
-  border-color: var(--bigfoot_feet) !important;
+  /* color: var(--bigfoot_feet) !important;
+  border-color: var(--bigfoot_feet) !important; */
+  cursor: default;
 }
 
 .chart-scatter:hover {
-  color: var(--eucalyptus) !important;
-  border-color: var(--eucalyptus) !important;
+  /* color: var(--eucalyptus) !important;
+  border-color: var(--eucalyptus) !important; */
+  cursor: default;
 }
 
 #straighttableModalTitle {

@@ -2,19 +2,19 @@ const csv = require('csvtojson');
 const fs = require('fs');
 const path = require('path');
 const mariadb = require('mariadb');
-const { validationResult } = require('express-validator');
 
 const { usersDb } = require('../config');
 const chartLib = require('../lib/views');
 const { colors } = require('../config/colors');
+const logger = require('../config/logger');
 const dbConnectors = require('../lib/dbConnectors');
 
 const nav = 'views';
 
-async function getAllSheets() {
-  const conn = await mariadb.createConnection(usersDb);
-  const rows = await conn.query(
-    `SELECT 
+async function getSheets(userId = null, type = null, filterActive = false, groupType = false) {
+  logger.log('info', 'CALL getSheets to retrieve sheets informations');
+  let queryStr = `
+    SELECT 
       v.view_name as viewName,
       v.view_api as viewApi,
       v.view_query as viewQuery,
@@ -29,59 +29,44 @@ async function getAllSheets() {
     JOIN views_types t
       ON v.type = t.id
     JOIN dbs d
-      ON v.source_db = d.id;`,
-  );
-  conn.end();
-  if (rows.length > 0) {
-    const result = {};
-    rows.forEach((sheet) => {
-      if (result[sheet.typeApi] === undefined) {
-        result[sheet.typeApi] = [];
-      }
-      result[sheet.typeApi].push(sheet);
-    });
-    return result;
-  }
-  return [];
-}
-
-async function getViewSheets(userId, type = null) {
-  const conn = await mariadb.createConnection(usersDb);
-  const rows = await conn.query(
-    `SELECT 
-      v.view_name as viewName,
-      v.view_api as viewApi,
-      v.view_query as viewQuery,
-      v.description as viewDescr,
-      v.settings as settings,
-      v.active as active,
-      t.type_api_name as typeApi,
-      t.type_name as typeName,
-      d.db_name as dbName,
-      d.connection_string as dbString,
-      d.db_type as dbType
-    FROM views v
-    JOIN views_users p
-      ON v.view_id = p.view_id
-    JOIN views_types t
-      ON v.type = t.id
-    JOIN dbs d
       ON v.source_db = d.id
-    WHERE p.user_id = ? AND v.active = 1;`,
-    userId,
-  );
-  conn.end();
-  if (rows.length > 0) {
-    let result = rows;
-    if (type) {
-      result = rows.filter(e => e.typeApi === type);
+  `;
+
+  if (userId) {
+    queryStr += ' JOIN views_users p ON v.view_id = p.view_id WHERE p.user_id = ?';
+    if (filterActive) {
+      queryStr += ' AND v.active = 1';
     }
-    return result;
+  } else if (filterActive) {
+    queryStr += ' WHERE v.active = 1';
   }
-  return [];
+
+  const conn = await mariadb.createConnection(usersDb);
+  let rows = await conn.query(queryStr, userId);
+  conn.end();
+
+  if (type) {
+    rows = rows.filter(e => e.typeApi === type);
+  }
+
+  let result = rows;
+
+  if (groupType) {
+    const obj = {};
+    result.forEach((sheet) => {
+      if (obj[sheet.typeApi] === undefined) {
+        obj[sheet.typeApi] = [];
+      }
+      obj[sheet.typeApi].push(sheet);
+    });
+    result = obj;
+  }
+
+  return result;
 }
 
 async function getUsers(viewApi) {
+  logger.log('info', 'CALL getUsers to retrieve users');
   const conn = await mariadb.createConnection(usersDb);
   const rows = await conn.query(
     `SELECT
@@ -110,6 +95,7 @@ async function getUsers(viewApi) {
 }
 
 async function getDatabases() {
+  logger.log('info', 'CALL getDatabases to retrieve dbs');
   const conn = await mariadb.createConnection(usersDb);
   const rows = await conn.query(
     `SELECT 
@@ -173,12 +159,16 @@ module.exports = {
 
   index: async (req, res) => {
     try {
-      const sheetsList = await getViewSheets(req.user.id);
-      res.render('views_home', { sheets: sheetsList, nav, user: req.user });
-      return;
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
+      const sheetsList = await getSheets(req.user.id, null, true);
+      return res.render('views_home', {
+        sheets: sheetsList, nav, user: req.user, error: '',
+      });
+    } catch (err) {
+      logger.log('error', 'Database failed on function getSheets(); Error: %s;', err.message);
+      const error = 'An error occured loading the page! Please retry or contact your administrator';
+      return res.status(500).render('views_home', {
+        sheets: [], nav, user: req.user, error,
+      });
     }
   },
 
@@ -186,10 +176,13 @@ module.exports = {
     const { type, name } = req.params;
     let sheetsList;
     try {
-      sheetsList = await getViewSheets(req.user.id, type);
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
+      sheetsList = await getSheets(req.user.id, type, true);
+    } catch (err) {
+      logger.log('error', 'Database failed on function getSheets(); Error: %s;', err.message);
+      const error = '<div class="alert alert-danger">An error occured loading the page! Please retry or contact your administrator</div>';
+      res.status(500).render('views_detail', {
+        type, name, sheets: [], nav, error, user: req.user,
+      });
       return;
     }
 
@@ -204,7 +197,8 @@ module.exports = {
     const file = `./db/${name}_${type}.csv`;
     fs.access(file, (err) => {
       if (err) {
-        const error = `<p class="alert alert-primary">Local file not available. Please, try to <a href="/views/${type}/${name}/reload" class="alert-link">reload data</a>.</p>`;
+        logger.log('info', 'CSV not available for view "%s_%s"', name, type);
+        const error = `<div class="alert alert-primary">Local file not available. Please, try to <a href="/views/${type}/${name}/reload" class="alert-link">reload data</a>.</div>`;
         res.status(404).render('views_detail', {
           type, name, sheets: sheetsList, nav, error, user: req.user,
         });
@@ -230,10 +224,13 @@ module.exports = {
     const { type, name } = req.params;
     let sheetsList;
     try {
-      sheetsList = await getViewSheets(req.user.id, type);
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
+      sheetsList = await getSheets(req.user.id, type, true);
+    } catch (err) {
+      logger.log('error', 'Database failed on function getSheets(); Error: %s;', err.message);
+      const error = '<div class="alert alert-danger">An error occured loading the page! Please retry or contact your administrator</div>';
+      res.status(500).render('views_detail', {
+        type, name, sheets: [], nav, error, user: req.user,
+      });
       return;
     }
 
@@ -249,8 +246,9 @@ module.exports = {
       const data = createCsv(result.rows, result.fields);
       fs.writeFile(file, data, (err) => {
         if (err) {
+          logger.log('error', 'Error on writing csv file "%s_%s". Error: %s', name, type, err.message);
           const error = '<p class="alert alert-danger">Server error. Please, retry later.</p>';
-          res.status(503).render('views_detail', {
+          res.status(500).render('views_detail', {
             type, name, sheets: sheetsList, nav, error, user: req.user,
           });
           return;
@@ -258,9 +256,9 @@ module.exports = {
         res.redirect(`/views/${type}/${name}`);
       });
     } catch (e) {
-      console.log(e);
+      logger.log('error', 'Database failed reloading "%s_%s" view data. Error: %s', name, type, e.message);
       const error = '<p class="alert alert-danger">Server not reachable. Please, retry later.</p>';
-      res.status(503).render('views_detail', {
+      res.status(500).render('views_detail', {
         type, name, sheets: sheetsList, nav, error, user: req.user,
       });
     }
@@ -272,7 +270,10 @@ module.exports = {
     res.header('Content-type: text/csv');
     res.download(file, 'download.csv', (err) => {
       if (err) {
-        res.status(404).render('notfound', { error: 'Csv file not available. Please, try to reload data', nav, user: req.user });
+        if (!res.headersSent) {
+          res.status(404).render('notfound', { error: 'Csv file not available. Please, try to reload data', nav, user: req.user });
+        }
+        logger.log('error', 'Error downloading CSV file "%s_%s". Error: %s', name, type, err.message);
       }
     });
   },
@@ -280,17 +281,16 @@ module.exports = {
   settings: async (req, res) => {
     let sheetsList;
     try {
-      sheetsList = await getAllSheets();
-    } catch (error) {
-      res.sendStatus(500);
-      return;
+      sheetsList = await getSheets(null, null, false, true);
+    } catch (err) {
+      logger.log('error', 'Database failed on function getSheets(); Error: %s;', err.message);
+      const error = 'An error occured loading the page! Please retry or contact your administrator';
+      return res.status(500).render('settings', {
+        type: null, name: null, nav: '', user: req.user, sheets: {}, error,
+      });
     }
-    res.render('settings', {
-      type: null,
-      name: null,
-      nav: 'settings',
-      user: req.user,
-      sheets: sheetsList,
+    return res.render('settings', {
+      type: null, name: null, nav: 'settings', user: req.user, sheets: sheetsList, error: '',
     });
   },
 
@@ -300,15 +300,18 @@ module.exports = {
     let dbs;
     let users;
     try {
-      sheetsList = await getAllSheets();
+      sheetsList = await getSheets(null, null, false, true);
       dbs = await getDatabases();
       users = await getUsers(name);
-    } catch (error) {
-      res.sendStatus(500);
-      return;
+    } catch (err) {
+      logger.log('error', 'Database failed; Error: %s;', err.message);
+      const error = 'An error occured loading the page! Please retry or contact your administrator';
+      return res.status(500).render('settings', {
+        type, name, nav: '', user: req.user, error,
+      });
     }
     const sheet = sheetsList[type].find(el => el.viewApi === name);
-    res.render('settings', {
+    return res.render('settings', {
       type,
       name,
       nav: 'settings',
@@ -321,16 +324,12 @@ module.exports = {
         chips: users.filter(e => e.view_id !== null).map((e) => { delete e.view_id; return e; }),
         list: users.filter(e => e.view_id === null).map((e) => { delete e.view_id; return e; }),
       },
+      error: '',
     });
   },
 
   updateView: async (req, res) => {
-    const { name } = req.params;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(422).json({ errors: errors.array() });
-      return;
-    }
+    const { name, type } = req.params;
     const { info, settings } = req.body;
     const users = info.users.map(e => [name, e.user_id]);
     let conn;
@@ -364,16 +363,17 @@ module.exports = {
         );
       } catch (e) {
         await conn.rollback();
-        res.sendStatus(500);
-        return;
+        logger.log('error', 'Database transaction failed during updateView "%s_%s"; Error: %s', name, type, e.message);
+        return res.sendStatus(500);
       }
     } catch (err) {
-      res.sendStatus(500);
-      return;
+      logger.log('error', 'Database connection failed during updateView "%s_%s"; Error: %s', name, type, err.message);
+      return res.sendStatus(500);
     }
     await conn.commit();
     conn.end();
-    res.sendStatus(200);
+    logger.log('info', 'Successfully update view "%s_%s"', name, type);
+    return res.sendStatus(200);
   },
 
 };

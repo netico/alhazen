@@ -35,20 +35,24 @@
     </div>
     <div class="col-lg-3 col-md-4 col-sm-6 p-4">
         <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-area" data-toggle="modal" data-target="#areachartModal">
-          <i class="fas fa-chart-area fa-2x"></i>
-          <p class="font-weight-bold pt-2 px-2 m-0">Area Chart</p>
-          <span class="badge badge-pill badge-primary">Available: <%=sheets.filter(e => e.typeApi === 'area-chart').length%></span>
+          <i class="fas fa-chart-area fa-2x text-muted"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0 text-muted">Area Chart</p>
+          <span class="badge badge-pill badge-secondary">Available: <%=sheets.filter(e => e.typeApi === 'area-chart').length%></span>
         </div>
     </div>
     <div class="col-lg-3 col-md-4 col-sm-6 p-4">
         <div class="bg-light rounded border shadow p-4 text-dark text-center card-home chart-scatter" data-toggle="modal" data-target="#scatterchartModal">
-          <i class="fas fa-project-diagram fa-2x"></i>
-          <p class="font-weight-bold pt-2 px-2 m-0">Scatter Chart</p>
-          <span class="badge badge-pill badge-primary">Available: <%=sheets.filter(e => e.typeApi === 'scatter-chart').length%></span>
+          <i class="fas fa-project-diagram fa-2x text-muted"></i>
+          <p class="font-weight-bold pt-2 px-2 m-0 text-muted">Scatter Chart</p>
+          <span class="badge badge-pill badge-secondary">Available: <%=sheets.filter(e => e.typeApi === 'scatter-chart').length%></span>
         </div>
     </div>
-    
   </div>
+  <%_ if(error) { _%>
+    <div class="alert alert-danger m-5" role="alert">
+      <%=error%>
+    </div>
+  <%_ } _%>
 </div>
 
 <%# Modal %>
@@ -145,58 +149,6 @@
           <%_ let lineChartList = sheets.filter(e => e.typeApi === 'line-chart'); _%>
           <%_ if (lineChartList.length > 0) { _%>
             <%_ for (elem of lineChartList) { _%>
-              <a href="<%='/views/' + elem.typeApi + '/' + elem.viewApi%>" class="list-group-item list-group-item-action"><%=elem.viewName%><span class="badge badge-pill badge-secondary float-right"><%=elem.dbName%></span></a>
-            <%_ } _%>
-          <%_ } else { _%>
-            <li class="list-group-item"> No items found </li>
-          <%_ }; _%>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<%# Area Chart %>
-<div class="modal" id="areachartModal" tabindex="-1" role="dialog" aria-labelledby="areachartModal" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="areachartModalTitle">Area Chart views</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <ul class="list-group list-group-flush">
-          <%_ let areaChartList = sheets.filter(e => e.typeApi === 'area-chart'); _%>
-          <%_ if (areaChartList.length > 0) { _%>
-            <%_ for (elem of areaChartList) { _%>
-              <a href="<%='/views/' + elem.typeApi + '/' + elem.viewApi%>" class="list-group-item list-group-item-action"><%=elem.viewName%><span class="badge badge-pill badge-secondary float-right"><%=elem.dbName%></span></a>
-            <%_ } _%>
-          <%_ } else { _%>
-            <li class="list-group-item"> No items found </li>
-          <%_ }; _%>
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
-<%# Scatter Chart %>
-<div class="modal" id="scatterchartModal" tabindex="-1" role="dialog" aria-labelledby="scatterchartModal" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="scatterchartModalTitle">Scatter Chart views</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <ul class="list-group list-group-flush">
-          <%_ let scatterChartList = sheets.filter(e => e.typeApi === 'scatter-chart'); _%>
-          <%_ if (scatterChartList.length > 0) { _%>
-            <%_ for (elem of scatterChartList) { _%>
               <a href="<%='/views/' + elem.typeApi + '/' + elem.viewApi%>" class="list-group-item list-group-item-action"><%=elem.viewName%><span class="badge badge-pill badge-secondary float-right"><%=elem.dbName%></span></a>
             <%_ } _%>
           <%_ } else { _%>
