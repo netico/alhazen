@@ -24,6 +24,7 @@ async function getSheets(userId = null, type = null, filterActive = false, group
       t.type_api_name as typeApi,
       t.type_name as typeName,
       d.db_name as dbName,
+      d.db_type as dbType,
       d.connection_string as dbString
     FROM views v
     JOIN views_types t
