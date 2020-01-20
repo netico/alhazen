@@ -27,7 +27,7 @@ router.get('/settings', adminAccess, views.settings);
 // View Create
 router.get('/:type/create', adminAccess, views.getCreate);
 
-router.post('/:type/create', adminAccess, views.postCreate);
+router.post('/:type/create', adminAccess, validationMiddleware, views.postCreate);
 
 // Views Routes
 router.get('/:type/:name', views.displayChart);
