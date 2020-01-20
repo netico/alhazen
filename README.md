@@ -1,4 +1,4 @@
-# Eris
+# Alhazen
 ## Analytics Made Easy
 
 ### Credits
