@@ -8,6 +8,7 @@ const chartLib = require('../lib/views');
 const { colors } = require('../config/colors');
 const logger = require('../config/logger');
 const dbConnectors = require('../lib/dbConnectors');
+const defaultSettings = require('../config/chartDefaultSett');
 
 const nav = 'views';
 
@@ -326,6 +327,7 @@ module.exports = {
         list: users.filter(e => e.view_id === null).map((e) => { delete e.view_id; return e; }),
       },
       error: '',
+      action: 'update',
     });
   },
 
@@ -367,14 +369,97 @@ module.exports = {
         logger.log('error', 'Database transaction failed during updateView "%s_%s"; Error: %s', name, type, e.message);
         return res.sendStatus(500);
       }
+      await conn.commit();
+      conn.end();
     } catch (err) {
       logger.log('error', 'Database connection failed during updateView "%s_%s"; Error: %s', name, type, err.message);
       return res.sendStatus(500);
     }
-    await conn.commit();
-    conn.end();
     logger.log('info', 'Successfully update view "%s_%s"', name, type);
     return res.sendStatus(200);
   },
 
+  getCreate: async (req, res) => {
+    const { type } = req.params;
+    let dbs;
+    let users;
+    try {
+      dbs = await getDatabases();
+      users = await getUsers('null');
+    } catch (err) {
+      logger.log('error', 'Database failed; Error: %s;', err.message);
+      const error = 'An error occured loading the page! Please retry or contact your administrator';
+      return res.status(500).render('create', {
+        type, nav: '', user: req.user, error,
+      });
+    }
+    res.status(200).render(
+      'create',
+      {
+        type,
+        nav: 'settings',
+        user: req.user,
+        sheet: {
+          viewName: '',
+          active: true,
+          dbName: '',
+          settings: JSON.stringify(defaultSettings[type]),
+        },
+        colors: JSON.stringify(colors),
+        dbs,
+        users: {
+          chips: users.filter(e => e.view_id !== null).map((e) => { delete e.view_id; return e; }),
+          list: users.filter(e => e.view_id === null).map((e) => { delete e.view_id; return e; }),
+        },
+        action: 'create',
+        error: '',
+      },
+    );
+  },
+
+  postCreate: async (req, res) => {
+    const { type } = req.params;
+    const { info, settings } = req.body;
+    let conn;
+    try {
+      conn = await mariadb.createConnection(usersDb);
+      try {
+        await conn.beginTransaction();
+        const { insertId } = await conn.query(
+          `INSERT INTO views(
+            view_name, 
+            description, 
+            type, 
+            active, 
+            view_query, 
+            source_db, 
+            settings
+          ) 
+          VALUES (?, ?, (SELECT id FROM views_types WHERE type_api_name = ?), ?, ?, ?, ?);`,
+          [
+            info.viewName,
+            info.description,
+            type,
+            info.active,
+            info.view_query,
+            info.source_db,
+            JSON.stringify(settings),
+          ],
+        );
+        const users = info.users.map(e => [insertId, e.user_id]);
+        await conn.batch('INSERT INTO views_users(view_id, user_id) VALUES(?,?)', users);
+      } catch (e) {
+        await conn.rollback();
+        logger.log('error', 'Database transaction failed while creating a new "%s" view; Error: %s', type, e.message);
+        return res.sendStatus(500);
+      }
+      await conn.commit();
+      conn.end();
+    } catch (err) {
+      logger.log('error', 'Database connection failed while creating a new "%s" view; Error: %s', type, err.message);
+      return res.sendStatus(500);
+    }
+    logger.log('info', 'Successfully created new "%s" view: %s', type, info.viewName);
+    return res.sendStatus(200);
+  },
 };

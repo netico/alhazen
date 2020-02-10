@@ -24,9 +24,10 @@ router.get('/', views.index);
 // Views Settings
 router.get('/settings', adminAccess, views.settings);
 
-router.get('/create/:type', adminAccess, (req, res) => {
-  res.send('create');
-});
+// View Create
+router.get('/:type/create', adminAccess, views.getCreate);
+
+router.post('/:type/create', adminAccess, validationMiddleware, views.postCreate);
 
 // Views Routes
 router.get('/:type/:name', views.displayChart);
