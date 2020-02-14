@@ -35,7 +35,7 @@
               </div>
             <%_ } _%>
             <input id="inputPerson" autocomplete="on" placeholder="test" list="datalistPerson" class="flex-fill mb-2" type="text">
-            <p class="text-secondary position-absolute" id="input-title">Insert who can access the view</p>
+            <p class="text-secondary position-absolute <%=(users.chips.length > 0) ? 'ontop' : '' %>" id="input-title">Insert who can access the view</p>
             <datalist id="datalistPerson">
               <%_ for (el of users.list) { _%>
                 <option data-id="<%=el.user_id%>" value="<%=el.f_name%> <%=el.l_name%>"></option>
