@@ -17,7 +17,7 @@ const adminAccess = (req, res, next) => {
 };
 
 
-router.use(auth.verify);
+router.use(auth.checkAuth);
 
 router.get('/', views.index);
 
