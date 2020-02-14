@@ -1,0 +1,73 @@
+<%- include('./template/header')%>
+
+<%_ if (error) { _%>
+
+  <div class="container d-flex justify-content-center align-items-center" style="height: calc(100vh - 62px);">
+    <div class="alert alert-danger">
+      <%=error%>
+    </div>
+  </div>
+
+<%_ } else { _%>
+
+  <div class="container">
+    <%- include('./template/settings_form')%>
+  </div>
+
+<%_ } _%>
+
+<script>
+
+  document.getElementById('form').addEventListener('submit', function formSubmit(event) {
+    event.preventDefault();
+    const info = document.querySelectorAll('.infoForm');
+    const settings = document.querySelectorAll('.settingsForm');
+    let obj = {
+      info: {},
+      settings: {},
+    };
+    
+    info.forEach( input => {
+      obj.info[input.name] = (input.type === 'checkbox') ? input.checked : input.value;
+    });
+
+    settings.forEach( input => {
+      obj.settings[input.name] = (input.type === 'checkbox') ? input.checked : input.value;
+    });
+
+    obj.info.users = personChips;
+
+    const xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4) {
+        if (this.status == 200) {
+          location.href = "/views/settings";
+          return
+        } else {
+          const errorsAlert = document.getElementById('error');
+          if (this.status === 422) {
+            const errors = JSON.parse(this.responseText).errors;
+            errors.forEach((el) => {
+              const id = el.param.split('.')[1];
+              document.getElementById(id).parentNode.insertAdjacentHTML(
+                'beforeend',
+                `<small id="${id}Error" class="form-text text-danger">${el.msg}</small>`
+              );
+            });
+            errorsAlert.innerHTML = "Please correct all errors and try again";
+          } else {
+            errorsAlert.innerHTML = "An error occurred creating the view! Please, contacts your administrator or retry later";
+          }
+          errorsAlert.classList.remove('d-none');
+          errorsAlert.classList.add('d-block');
+        }
+      }
+    };
+    xhttp.open("POST", "/views/<%=type%>/create", true);
+    xhttp.setRequestHeader("Content-type", "application/json");
+    xhttp.send(JSON.stringify(obj));
+  });
+
+</script>
+
+<%- include('./template/footer')%>

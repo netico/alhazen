@@ -1,0 +1,333 @@
+<div class="container pt-3">
+  <% if (action === 'update') { %>
+    <h1 class="display-4">Update: <%=sheet.viewName%></h1>
+  <% } else { %>
+    <h1 class="display-4">Create View</h1>
+  <% } %>
+  <div>
+    <form id="form">
+      <%# Info VIEW %>
+      <h5 class="bg-secondary text-white rounded-pill font-weight-normal py-3 px-4 my-4">View info</h5>
+      <div class="px-4 py-2">
+
+        <div class="form-group row">
+          <div class="col">
+            <label for="viewName">View Name</label>
+            <input type="text" id="viewName" name="viewName" class="form-control infoForm" required placeholder="Enter view name" value="<%=sheet.viewName%>">
+          </div>
+          <% if (action === 'update') { %>
+            <div class="col">
+              <label for="apiName">API View</label>
+              <input type="text" id="apiName" class="form-control-plaintext" readonly placeholder="-" value="<%=sheet.viewApi%>">
+            </div>
+          <% } %>
+        </div>
+        <div class="custom-control custom-switch my-4 mb-4">
+          <input type="checkbox" class="custom-control-input infoForm" id="activeView" name="active" <%=(sheet.active) ? 'checked' : ''%>>
+          <label class="custom-control-label" for="activeView">Active</label>
+        </div>
+        <div class="px-5 mb-4">
+          <div id="person-list" class="d-flex flex-wrap mt-3 pt-3 position-relative">
+            <%_ for (el of users.chips) { _%>
+              <div class="chip mr-2 mb-2" data-id='<%=el.user_id%>'>
+                <img src="<%=(el.picture_link) ? el.picture_link : '/images/user.png' %>" alt="Person" width="96" height="96">
+                <%=el.f_name%> <%=el.l_name%><span class="closebtn" onclick="removeChip(this)">&times;</span>
+              </div>
+            <%_ } _%>
+            <input id="inputPerson" autocomplete="on" placeholder="test" list="datalistPerson" class="flex-fill mb-2" type="text">
+            <p class="text-secondary position-absolute" id="input-title">Insert who can access the view</p>
+            <datalist id="datalistPerson">
+              <%_ for (el of users.list) { _%>
+                <option data-id="<%=el.user_id%>" value="<%=el.f_name%> <%=el.l_name%>"></option>
+              <%_ } _%>
+            </datalist>
+          </div>
+          <hr id="line-input" class="mt-1">
+        </div>
+        <div class="form-group row">
+          <div class="col">
+            <label for="viewDescription">Description</label>
+            <textarea class="form-control infoForm" name="description" id="viewDescription" rows="3"><%=sheet.viewDescr%></textarea>
+          </div>
+          <div class="col-4">
+            <label for="sourceDb">Database source</label>
+            <select class="custom-select infoForm" id="sourceDb" required name="source_db">
+              <option selected disabled>-- Select a database --</option>
+              <%_ for (let i = 0; i < dbs.length; i++) { _%>
+              <option <%=(sheet.dbName === dbs[i].db_name) ? 'selected' : ''%> value="<%=dbs[i].id%>"><%=dbs[i].db_name%></option>
+              <%_ } _%>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="query">Query</label>
+          <textarea class="form-control infoForm" required name="view_query" id="query" rows="5"><%=sheet.viewQuery%></textarea>
+        </div>
+
+      </div>
+
+      <%# Settings VIEW %>
+      <%_ let settings = JSON.parse(sheet.settings); _%>
+      <%_ if(type !== 'straight-table') { _%>
+      <h5 class="bg-dark text-white rounded-pill font-weight-normal py-3 px-4 my-4">View settings</h5>
+      <div class="px-4 py-2">
+
+        <div class="form-group row">
+          <div class="col">
+            <label for="serieField">Serie Field</label>
+            <input type="text" id="serieField" name="serieField" class="form-control settingsForm" required placeholder="Enter a field" value="<%=settings.serieField%>">
+          </div>
+          <div class="col">
+            <%_ if (type !== 'pie-chart') { _%>
+            <label for="trendBy">Trend by Field</label>
+            <input type="text" id="trendBy" name="trendBy" class="form-control settingsForm" placeholder="Enter a field" value="<%=settings.trendBy%>">
+            <%_ } _%>
+          </div>
+        </div>
+
+        <div class="form-group row">
+          <label for="colorPalette" class="col-form-label ml-3">Color Palette</label>
+          <div class="col-auto">
+            <select class="custom-select col-auto settingsForm" required id="colorPalette" name="colorPalette">
+              <%_ for (let i = 1; i <= JSON.parse(colors).length; i++) { _%>
+              <option <%=(settings.colorPalette === i) ? 'selected' : ''%>><%=i%></option>
+              <%_ } _%>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-center align-items-center px-5 py-3 mb-5">
+          <div class="d-flex flex-wrap justify-content-center ">
+            <div class="colorBox m-3 rounded-circle" id="color1"></div>
+            <div class="colorBox m-3 rounded-circle" id="color2"></div>
+            <div class="colorBox m-3 rounded-circle" id="color3"></div>
+            <div class="colorBox m-3 rounded-circle" id="color4"></div>
+            <div class="colorBox m-3 rounded-circle" id="color5"></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-3">
+            <div class="form-group">
+              <label for="legendPos">Legend position</label>
+              <select class="custom-select settingsForm" required id="legendPosition" name="legendPosition">
+                <option selected disabled hidden>-- Select --</option>
+                <option <%=(settings.legendPosition === 'top') ? 'selected' : ''%>>top</option>
+                <option <%=(settings.legendPosition === 'bottom') ? 'selected' : ''%>>bottom</option>
+                <option <%=(settings.legendPosition === 'left') ? 'selected' : ''%>>left</option>
+                <option <%=(settings.legendPosition === 'right') ? 'selected' : ''%>>right</option>
+              </select>
+            </div>
+            <%_ if (type !== 'pie-chart') { _%>
+            <div class="form-group">
+              <label for="stepSize">Set step size</label>
+              <input type="number" min="0" step="0.1" id="stepSize" required name="stepSize" class="form-control settingsForm" placeholder="Enter a number" value="<%=settings.stepSize%>">
+            </div>
+            <%_ } _%>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="sortLabel" name="sortLabel" <%=(settings.sortLabel) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="sortLabel">Sort Label</label>
+            </div>
+            <%_ if (type === 'bar-chart') { _%>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="horizontal" name="horizontal" <%=(settings.horizontal) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="horizontal">Horizontal Bar</label>
+            </div>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="stacked" name="stacked" <%=(settings.stacked) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="stacked">Stacked Bar</label>
+            </div>
+            <%_ } _%>
+            <%_ if (type !== 'pie-chart') { _%>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="beginAtZero" name="beginAtZero" <%=(settings.beginAtZero) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="beginAtZero">X-Axis begin at zero</label>
+            </div>
+            <%_ } _%>
+            <%_ if (type === 'line-chart') { _%>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="fill" name="fill" <%=(settings.fill) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="fill">Fill Area</label>
+            </div>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="showLine" name="showLine" <%=(settings.showLine) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="showLine">Show Line</label>
+            </div>
+            <%_ } _%>
+            <%_ if (type === 'pie-chart') { _%>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="doughnut" name="doughnut" <%=(settings.doughnut) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="doughnut">Doughnut</label>
+            </div>
+            <div class="custom-control custom-switch my-4">
+              <input type="checkbox" class="custom-control-input settingsForm" id="defaultBorder" name="defaultBorder" <%=(settings.defaultBorder) ? 'checked' : ''%>>
+              <label class="custom-control-label" for="defaultBorder">Show Border</label>
+            </div>
+            <%_ } _%>
+          </div>
+          <div class="col-8 offset-1">
+            <div class="form-group row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="backgroundAlpha">Background Alpha: <span id="backgroundAlphaLabel" class="text-primary"><%=settings.backgroundAlpha%></span></label>
+                  <input type="range" class="custom-range settingsForm" required min="0" max="1" step="0.1" id="backgroundAlpha" name="backgroundAlpha" value="<%=settings.backgroundAlpha%>">
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-group">
+                  <label for="borderAlpha">Border Alpha: <span id="borderAlphaLabel" class="text-primary"><%=settings.borderAlpha%></span></label>
+                  <input type="range" class="custom-range settingsForm" required min="0" max="1" step="0.1" id="borderAlpha" name="borderAlpha" value="<%=settings.borderAlpha%>">
+                </div>
+              </div>
+            </div>
+            <div class="form-group row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="borderWidth">Border Width: <span id="borderWidthLabel" class="text-primary"><%=settings.borderWidth%></span></label>
+                  <input type="range" class="custom-range settingsForm" required min="0" max="10" id="borderWidth" name="borderWidth" value="<%=settings.borderWidth%>">
+                </div>
+              </div>
+              <div class="col">
+                <%_ if (type === 'line-chart') { _%>
+                <div class="form-group">
+                  <label for="lineTension">Line Tension</label>
+                  <select class="custom-select settingsForm" required id="lineTension" name="lineTension">
+                    <option value=0 <%=(settings.lineTension === 0) ? 'selected' : ''%>>sharp</option>
+                    <option value=0.4 <%=(settings.lineTension === 0.4) ? 'selected' : ''%>>smooth</option>
+                  </select>
+                </div>
+                <%_ } _%>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <%_ } _%>
+      <hr>
+      <div id="error" class="alert alert-danger mx-3 d-none" role="alert"></div>
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-lg btn-primary px-4 m-3">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  <%_ if(type !== 'straight-table') { _%>
+  const COLORS = <%-colors-%>;
+  const paletteSelector = document.getElementById('colorPalette');
+
+  displayPalette.apply(paletteSelector);
+
+  document.querySelectorAll("[type=range").forEach(range => {
+    range.oninput = function () {
+      document.getElementById(`${this.id}Label`).innerHTML = this.value;
+    }
+  })
+
+  paletteSelector.oninput = displayPalette;
+
+  function displayPalette() {
+    const palette = COLORS[this.value - 1];
+    palette.forEach((col, i) => {
+      document.getElementById(`color${i + 1}`).style.backgroundColor = `rgb(${col})`;
+    })
+  }
+  <%_ } _%>
+
+  // hr styling on focusing ----------------------------------------
+  document.getElementById('inputPerson').onfocusin = function () {
+    document.getElementById('line-input').classList.add('focused');
+  }
+  document.getElementById('inputPerson').onfocusout = function () {
+    document.getElementById('line-input').classList.remove('focused');
+  }
+  // ---------------------------------------------------------------
+
+  if (document.getElementsByClassName('chip').length) {
+    document.getElementById('input-title').classList.add('ontop');
+  }
+
+  const personList = <%-JSON.stringify(users.list)%>;
+  const personChips = <%-JSON.stringify(users.chips)%>;
+
+  let inputEmpty = false;
+  const input = document.getElementById('inputPerson');
+
+  input.addEventListener('keydown', event => {
+    if (event.key === "Backspace") {
+      if (!input.value) {
+        inputEmpty = true;
+        return;
+      }
+      inputEmpty = false;
+    }
+  });
+
+  input.addEventListener('keyup', event => {
+    let value = input.value;
+    if (event.key === "Enter") {
+      const index = personList.findIndex(e => `${e.f_name} ${e.l_name}` === value)
+      if (index !== -1) {
+        input.value = '';
+        input.insertAdjacentHTML(
+          'beforebegin', 
+          `<div class="chip mr-2 mb-2" data-id='${personList[index].user_id}'>
+            <img src="${(personList[index].picture_link) ? personList[index].picture_link : '/images/user.png' }" alt="Person" width="96" height="96">
+            ${value}<span class="closebtn" onclick="removeChip(this)">&times;</span>
+          </div>`);
+        const personObj = personList.splice(index, 1)[0];
+        personChips.push(personObj);
+        document.querySelector(`option[data-id="${personObj.user_id}"]`).remove();
+        document.getElementById('input-title').classList.add('ontop');
+        return;
+      } else {
+        input.classList.add('text-danger');
+        return;
+      }
+    }
+    if (inputEmpty && event.key === "Backspace") {
+      if (document.getElementsByClassName('chip').length) {
+        const person = personChips.pop();
+        personList.push(person);
+        document.querySelector(`div[data-id='${person.user_id}'`).remove();
+        document.getElementById('datalistPerson').insertAdjacentHTML(
+          "beforeend",
+          `<option data-id="${person.user_id}" value="${person.f_name} ${person.l_name}"></option>`
+        )
+        if (chipLength === 0) {
+          document.getElementById('input-title').classList.remove('ontop');
+        }
+      }
+    }
+    input.classList.remove('text-danger');
+    return;
+  });
+
+  function removeChip(btnClose) {
+    const id = btnClose.parentElement.getAttribute('data-id');
+    const index = personChips.findIndex(e => e.user_id == id)
+    const person = personChips.splice(index, 1)[0];
+    personList.push(person);
+    btnClose.parentElement.remove();
+    document.getElementById('datalistPerson').insertAdjacentHTML(
+      "beforeend",
+      `<option data-id="${person.user_id}" value="${person.f_name} ${person.l_name}"></option>`
+    )
+    const chipLength = document.getElementsByClassName('chip').length;
+    if (chipLength === 0) {
+      document.getElementById('input-title').classList.remove('ontop');
+    }
+  }
+
+  document.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('keydown', event => {
+      if(event.key === "Enter") {
+        event.preventDefault();
+      }
+      return;
+    })
+  })
+
+</script>

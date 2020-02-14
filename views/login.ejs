@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Analytics Made Easy">
     <meta name="author" content="Analytics Made Easy">
-    <!-- Google -->
     <title>Analytics Made Easy</title>
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
@@ -14,8 +13,6 @@
     <!-- Custom CSS -->
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
     <link href="/css/custom.css" rel="stylesheet">
-    <!-- Google Sign-in -->
-    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>
   </head>
 
   <body>
@@ -23,68 +20,17 @@
     <div style="background: linear-gradient(153deg, #1e324a 75%, #f6da2f 75%);">
       <div class="container vh-100 d-flex justify-content-center align-items-center">
         <div class="text-center p-5 shadow rounded" style="background: #fff">
-          <div class="mb-3 mx-3">
+          <div class="mx-3">
             <img src="/images/logo.png" alt="logo">
+          <div class="mt-3">
+            <a href="/auth/google" id="signinButton"><img src="/images/google_login.svg" alt=""></a>
           </div>
-          <div id="my-signin" onclick="authFun()" class="d-flex justify-content-center">
-            <div id="spin" class="spinner-border text-primary" role="status">
-              <span class="sr-only">Loading...</span>
-            </div>
-            <img id="google-signin" class="d-none" style="cursor: pointer;" src="/images/google-logo/2x/btn_google_signin_dark_normal_web@2x.png" width="220px" alt="">
+          <div class="mt-2">
+            <small id="errorMsg" class="text-danger"><%=error%> </small>
           </div>
-          <small id="errorMsg" class="text-danger"></small>
         </div>
       </div>
     </div>
-
-    <script>
-      
-      function init() {
-        gapi.load('auth2', function () {
-          document.getElementById('spin').classList.add('d-none');
-          document.getElementById('google-signin').classList.remove('d-none');
-        });
-      }
-
-      function authFun() {
-        gapi.auth2.authorize({
-          client_id: '836372699796-48frr0648mp0jfohg7mad481qc2gcd75.apps.googleusercontent.com',
-          scope: 'email profile openid',
-          response_type: 'id_token permission',
-          prompt: 'select_account',
-        }, function(response) {
-          if (response.error) {
-            return;
-          }
-          const idToken = response.id_token;
-          const xhr = new XMLHttpRequest();
-          xhr.onreadystatechange = function () {
-            if (this.readyState === 4) {
-              let errorStr;
-              switch (this.status) {
-              case 201:
-                window.location.href = '/views';
-                return;
-                break;
-              case 401:
-                errorStr = "Authentication failed. Please, contact your admin"
-                break;
-              case 500:
-                errorStr = "Server Error. Please, contact your admin"
-                break;
-              default:
-                errorStr = "An error occured. Please, contact your admin"
-                break;
-              }
-              document.getElementById('errorMsg').innerHTML = errorStr;
-            }
-          }
-          xhr.open('POST', '/login');
-          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-          xhr.send(`idToken=${idToken}`);
-        });
-      }
-    </script>
 
   </body>
 
