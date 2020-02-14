@@ -339,7 +339,9 @@ module.exports = {
       try {
         await conn.beginTransaction();
         await conn.query('DELETE FROM views_users WHERE view_id = (SELECT view_id FROM views WHERE view_api = ?)', name);
-        await conn.batch('INSERT INTO views_users(view_id, user_id) VALUES((SELECT view_id FROM views WHERE view_api = ?),?)', users);
+        if (users.length > 0) {
+          await conn.batch('INSERT INTO views_users(view_id, user_id) VALUES((SELECT view_id FROM views WHERE view_api = ?),?)', users);
+        }
         await conn.query(
           `UPDATE
             views
