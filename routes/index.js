@@ -5,16 +5,16 @@ const auth = require('../controllers/auth');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.redirect('/views');
+  if (req.query.logged) {
+    return res.render('home');
+  }
+  return res.redirect('/views');
 });
 
 // Login Auth
-router.get('/login', auth.loginGet);
-
-router.post('/login', auth.loginPost);
-
-router.get('/logout', (req, res) => {
-  res.clearCookie('access_token').redirect('/login?action=logout');
-});
+router.get('/login', auth.checkAuth, auth.loginGet);
+router.get('/logout', auth.logout);
+router.get('/auth/google', auth.googleAuth);
+router.get('/auth/google/callback', auth.googleAuthCallback);
 
 module.exports = router;

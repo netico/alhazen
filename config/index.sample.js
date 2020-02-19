@@ -5,7 +5,11 @@ module.exports = {
   // Token secret
   secret: '',
   // Google oauth
-  CLIENT_ID: '',
+  googleAuth: {
+    client_id: '',
+    client_secret: '',
+    redirect_uri: '',
+  },
   // Database
   usersDb: {
     host: '',
