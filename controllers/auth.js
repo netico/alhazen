@@ -43,7 +43,7 @@ module.exports = {
 
   loginGet: (req, res) => {
     const error = req.query.error ? 'An error occurred logging in. Please, retry later.' : '';
-    res.render('login', { error });
+    return res.clearCookie('token').render('login', { error });
   },
 
   googleAuth: (req, res) => {
@@ -108,7 +108,6 @@ module.exports = {
     }
   },
 
-  // Delete also from DB accessToken and refreshToken
   logout: async (req, res) => {
     if (req.cookies && req.cookies.token) {
       const { token } = req.cookies;
@@ -123,7 +122,7 @@ module.exports = {
           );
           await oAuth2Client.revokeToken(user.accessToken);
           try {
-            await serializeUser(payload.id, user.pictureLink, null, null);
+            await serializeUser(payload.id, user.picture_link, null, null);
           } catch (error) {
             logger.log('error', 'Logout: database failed serializing user. User id: %s; Error: %s;', payload.id, error.message);
           }
