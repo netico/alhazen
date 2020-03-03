@@ -1,5 +1,5 @@
 # Alhazen
-## Analytics Made Easy
+## Analytics platform
 
 ### Credits
 * Express - http://expressjs.com
