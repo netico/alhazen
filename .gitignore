@@ -67,3 +67,5 @@ db
 config/index.js
 .eslintrc*
 .vscode
+
+public/images/logo.png

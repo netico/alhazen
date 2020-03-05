@@ -8,6 +8,7 @@ const { randomString } = require('./lib/utils');
 
 const indexRouter = require('./routes');
 const viewsRouter = require('./routes/views');
+const usersRouter = require('./routes/users');
 
 const app = express();
 
@@ -35,7 +36,7 @@ app.use((req, res, next) => {
 });
 
 app.use('/', indexRouter);
-
 app.use('/views', viewsRouter);
+app.use('/users', usersRouter);
 
 app.listen(port, host, () => console.log(`Server start on port ${host}:${port}`));
