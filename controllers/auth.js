@@ -206,4 +206,13 @@ module.exports = {
     return res.redirect('/login?authLogin=false');
   },
 
+  adminAccess: (req, res, next) => {
+    if (req.user.role === 'admin') {
+      logger.log('info', 'User %s has "admin" authorization', req.user.email);
+      return next();
+    }
+    logger.log('error', "Unauthorized! User %s doesn't have 'admin' authorization", req.user.email);
+    return res.sendStatus(401);
+  },
+
 };

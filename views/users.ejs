@@ -1,0 +1,143 @@
+<% include ./template/header.ejs %> 
+
+  <div class="container mt-5">
+    <% if (error) { %>
+      <h3 class="display-3">User list</h3>
+      <div class="alert alert-danger" role="alert">
+        <%= error %> 
+      </div>
+    <% } else { %>
+      <% if (mode !== 'list') { %>
+
+        <div class="d-flex justify-content-center align-items-center mb-5">
+          <img class="rounded-circle" src="<%=(u.picture_link) ? u.picture_link : '/images/user.svg'%>" alt="" width="120px" height="120px">
+        </div>
+        <form id="userForm">
+          <div>
+
+            <% if (mode !== 'create') { %>
+              <div class="form-group row justify-content-center">
+                <label class="col-1 col-form-label mr-3" for="userID">ID:</label>
+                <div class="col-4">
+                  <input type="text" class="form-control" id="userID" name="id" readonly value="<%=u.user_id%>">
+                </div>
+              </div>
+            <% } %> 
+            
+            <div class="form-group row justify-content-center">
+              <label class="col-1 col-form-label mr-3" for="firstName">Name:</label>
+              <div class="col-4">
+                <input type="text" class="form-control" id="firstName" name="f_name" placeholder="John" value="<%=u.f_name%>">
+              </div>
+            </div>
+            <div class="form-group row justify-content-center">
+              <label class="col-1 col-form-label mr-3" for="lastName">Surname:</label>
+              <div class="col-4">
+                <input type="text" class="form-control" id="lastName" name="l_name" placeholder="Doe" value="<%=u.l_name%>">
+              </div>
+            </div>
+            <div class="form-group row justify-content-center">
+              <label class="col-1 col-form-label mr-3" for="email">Email:</label>
+              <div class="col-4">
+                <input type="text" class="form-control" id="email" name="email" placeholder="yourname@domain.com" value="<%=u.email%>">
+              </div>
+            </div>
+  
+            <div class="form-group row justify-content-center">
+              <label class="col-1 col-form-label mr-3" for="customSwitch1">Active:</label>
+              <div class="col-4 custom-control custom-switch pl-5 pt-2">
+                <input type="checkbox" class="custom-control-input" id="customSwitch1" name="active" <%=(u.active) ? 'checked' : ''%>>
+                <label class="custom-control-label" for="customSwitch1"></label>
+              </div>
+            </div>
+  
+            <div class="form-group row justify-content-center pt-4">
+              <div class="col-3">
+                <button type="submit" class="btn btn-primary btn-lg btn-block" id="save_btn">Save</button>
+              </div>
+            </div>
+  
+          </div>
+        </form>
+        <div class="row justify-content-center">
+          <div class="col-5 mt-3 alert alert-danger text-center d-none" id="error"></div>
+          <div class="col-5 mt-3 alert alert-success text-center d-none" id="success"></div>
+        </div>
+      <% } else { %>
+        <div class="d-flex justify-content-between">
+          <h3 class="display-3">User list</h3>
+          <div class="d-flex align-items-center">
+            <a href="/users/create" class="btn btn-success px-3 py-2">
+              <h5 class="m-0 font-weight-normal">
+                <i class="fas fa-plus mr-2"></i>New user
+              </h5>
+            </a>
+          </div>
+        </div>
+        <div class="pt-3">
+          <ul class="list-group">
+            <% for (let u of users) { %> 
+              <a href="<%=`/users/${u.user_id}`%> " class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <img class="rounded-circle mx-3" src="<%=(u.picture_link) ? u.picture_link : '/images/user.svg'%>" alt="user_img" width="35px" height="35px">
+                <div class="flex-fill"><%=`${u.f_name} ${u.l_name}`%></div>
+                <span class="badge badge-pill <%=(u.active) ? 'badge-primary' : 'badge-secondary'%>"><%=(u.active) ? 'Active' : 'Suspended'%></span>
+              </a>
+            <% } %> 
+          </ul>
+        </div>
+      <% } %>
+
+    <% } %>
+  </div>
+
+  <% if (mode !== 'list') { %>
+    <script>
+      const userForm = document.getElementById('userForm');
+      userForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const oData = {
+          <% if (mode === 'detail') { %> userID: userForm['id'].value, <% } %>
+          fName: userForm['f_name'].value,
+          lName: userForm['l_name'].value,
+          email: userForm['email'].value,
+          active: userForm['active'].checked,
+        };
+
+        console.log(oData);
+        const xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+          if (this.readyState == 4) {
+            if (this.status == 200) {
+              <% if (mode === 'detail') { %>
+                const successAlert = document.getElementById('success');
+                successAlert.innerHTML = 'Successfully updated the user!';
+                successAlert.classList.remove('d-none');
+                window.setInterval(() => successAlert.classList.add('d-none'), 2000);
+                return;  
+              <% } else { %>
+                const id = JSON.parse(this.responseText).data.id;
+                location.href = '/users/' + id;
+                return;
+              <% } %>
+            } else {
+              const errorAlert = document.getElementById('error');
+              errorAlert.innerHTML = 'An error occurred <%=(mode === 'detail') ? 'updating' : 'creating'%> the user. Please, retry later.';
+              errorAlert.classList.remove('d-none');
+              window.setInterval(() => errorAlert.classList.add('d-none'), 2000);
+              return;
+            }
+          }
+        }
+        <% if (mode === 'detail') { %>
+          xhttp.open('PUT', '/users/<%=u.user_id%>');
+        <% } else { %>
+          xhttp.open('POST', '/users');
+        <% } %>
+        xhttp.setRequestHeader('Content-type', 'application/json');
+        xhttp.send(JSON.stringify(oData));
+      });
+    </script>
+  <% } %>
+
+<% include ./template/footer.ejs %> 
