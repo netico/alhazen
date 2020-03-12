@@ -83,8 +83,6 @@ async function getUsers(viewApi) {
   LEFT JOIN (
     SELECT *
     FROM views_users 
-      FROM views_users 
-    FROM views_users 
     WHERE view_id = (
       SELECT view_id
       FROM views
@@ -97,10 +95,6 @@ async function getUsers(viewApi) {
     throw new Error("Database error retrieving view's users");
   }
   return rows;
-
-  // if (rows.length > 0) {
-  //   return rows;
-  // }
 }
 
 async function getDatabases() {

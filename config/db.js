@@ -4,7 +4,7 @@ const { usersDb } = require('../config');
 const logger = require('../config/logger');
 
 usersDb.connectionLimit = 5;
-const pool = mariadb.createPool({ usersDb });
+const pool = mariadb.createPool(usersDb);
 
 module.exports = {
   query: async (text, params = []) => {
@@ -23,7 +23,7 @@ module.exports = {
       }
       return res;
     } catch (e) {
-      logger.log('error', 'Query failed. Text: %s; Error: %s', text, e.message);
+      logger.log('error', 'Query failed; Error: %s', text, e.message);
       return false;
     } finally {
       if (conn) conn.release();

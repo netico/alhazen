@@ -16,7 +16,7 @@ const serializeUser = async (userId, pictureLink, accessToken, refreshToken) => 
 
 const deserializeUser = async (placeholder, paramType) => {
   const text = `SELECT * FROM users WHERE active = 1 AND ${paramType} = ?`;
-  const rows = await db.query(text, placeholder);
+  const rows = await db.query(text, [placeholder]);
   if (!rows) {
     throw new Error('Database error');
   }
