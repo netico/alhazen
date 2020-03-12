@@ -52,12 +52,12 @@ module.exports = {
     } = req.body;
 
     const text = 'INSERT INTO users(f_name, l_name, email, active) VALUES(?,?,?,?)';
-    const response = await db.query(text, [fName, lName, email, active]);
-    if (!response) {
+    const result = await db.query(text, [fName, lName, email, active]);
+    if (!result) {
       logger.log('error', 'Error creating the user.');
       return res.sendStatus(500);
     }
-    return res.status(200).send({ success: true, data: { id: response.insertId } });
+    return res.status(200).send({ success: true, data: { id: result.insertId } });
   },
 
   updateUser: async (req, res) => {
@@ -66,11 +66,11 @@ module.exports = {
     } = req.body;
 
     const text = 'UPDATE users SET f_name = ?, l_name = ?, email = ?, active = ? WHERE user_id = ?';
-    const response = await db.query(text, [fName, lName, email, active, userID]);
-    if (!response) {
+    const result = await db.query(text, [fName, lName, email, active, userID]);
+    if (!result) {
       logger.log('error', 'Error updating the user %s - ID: %s.', email, userID);
       return res.sendStatus(500);
     }
-    return res.status(200).send({ success: true, data: { affectedRows: response.affectedRows } });
+    return res.status(200).send({ success: true, data: { affectedRows: result.affectedRows } });
   },
 };
