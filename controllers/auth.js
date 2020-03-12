@@ -1,28 +1,28 @@
 const jwt = require('jsonwebtoken');
-const mariadb = require('mariadb');
 const { OAuth2Client } = require('google-auth-library');
 
-const { secret, usersDb, googleAuth } = require('../config');
 const logger = require('../config/logger');
+const db = require('../config/db');
+const { secret, googleAuth } = require('../config');
 
 const serializeUser = async (userId, pictureLink, accessToken, refreshToken) => {
-  try {
-    const conn = await mariadb.createConnection(usersDb);
-    await conn.query('UPDATE users SET picture_link = ?, accessToken = ?, refreshToken = ? WHERE user_id = ?', [pictureLink, accessToken, refreshToken, userId]);
-    conn.end();
-  } catch (error) {
-    logger.log('error', 'Error on serialize user. Error: %s', error.message);
+  const text = 'UPDATE users SET picture_link = ?, accessToken = ?, refreshToken = ? WHERE user_id = ?';
+  const res = await db.query(text, [pictureLink, accessToken, refreshToken, userId]);
+  if (!res) {
+    logger.log('error', 'Error on serialize user.');
   }
+  return res;
 };
 
 const deserializeUser = async (placeholder, paramType) => {
-  const query = `SELECT * FROM users WHERE active = 1 AND ${paramType} = ?`;
-  const conn = await mariadb.createConnection(usersDb);
-  const rows = await conn.query(query, placeholder);
+  const text = `SELECT * FROM users WHERE active = 1 AND ${paramType} = ?`;
+  const rows = await db.query(text, placeholder);
+  if (!rows) {
+    throw new Error('Database error');
+  }
   if (rows.length === 1) {
     return rows[0];
   }
-  conn.end();
   return null;
 };
 
