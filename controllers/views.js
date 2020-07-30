@@ -27,7 +27,7 @@ async function getSheets(userId = null, type = null, filterActive = false, group
       t.type_name as typeName,
       d.db_name as dbName,
       d.db_type as dbType,
-      d.connection_string as dbString
+      d.options as dbOptions
     FROM views v
     JOIN views_types t
       ON v.type = t.id
@@ -238,7 +238,7 @@ module.exports = {
     }
     try {
       const sheet = sheetsList[index];
-      const result = await dbConnectors[sheet.dbType](sheet.dbString, sheet.viewQuery);
+      const result = await dbConnectors[sheet.dbType](sheet.dbOptions, sheet.viewQuery);
       const file = `./db/${name}_${type}.csv`;
       const data = createCsv(result.rows, result.fields);
       fs.writeFile(file, data, (err) => {
