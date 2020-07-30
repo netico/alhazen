@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const mariadb = require('mariadb');
 
+const db = require('../config/db');
 const { usersDb } = require('../config');
 const chartLib = require('../lib/views');
 const { colors } = require('../config/colors');
@@ -43,9 +44,10 @@ async function getSheets(userId = null, type = null, filterActive = false, group
     queryStr += ' WHERE v.active = 1';
   }
 
-  const conn = await mariadb.createConnection(usersDb);
-  let rows = await conn.query(queryStr, userId);
-  conn.end();
+  let rows = await db.query(queryStr, [userId]);
+  if (!rows) {
+    throw new Error('Database error retrieving sheets informations');
+  }
 
   if (type) {
     rows = rows.filter(e => e.typeApi === type);
@@ -69,47 +71,40 @@ async function getSheets(userId = null, type = null, filterActive = false, group
 
 async function getUsers(viewApi) {
   logger.log('info', 'CALL getUsers to retrieve users');
-  const conn = await mariadb.createConnection(usersDb);
-  const rows = await conn.query(
-    `SELECT
-      u.user_id,
-      u.f_name,
-      u.l_name,
-      u.picture_link,
-      vu.view_id
-    FROM users u
-    LEFT JOIN (
-      SELECT *
-      FROM views_users 
-      WHERE view_id = (
-        SELECT view_id
-        FROM views
-        WHERE view_api = ?)
-    ) as vu
-    ON u.user_id = vu.user_id;`,
-    viewApi,
-  );
-  conn.end();
-  if (rows.length > 0) {
-    return rows;
+
+  const text = `
+  SELECT
+    u.user_id,
+    u.f_name,
+    u.l_name,
+    u.picture_link,
+    vu.view_id
+  FROM users u
+  LEFT JOIN (
+    SELECT *
+    FROM views_users 
+    WHERE view_id = (
+      SELECT view_id
+      FROM views
+      WHERE view_api = ?)
+  ) as vu
+  ON u.user_id = vu.user_id;`;
+
+  const rows = await db.query(text, [viewApi]);
+  if (!rows) {
+    throw new Error("Database error retrieving view's users");
   }
-  throw new Error('Error select users');
+  return rows;
 }
 
 async function getDatabases() {
   logger.log('info', 'CALL getDatabases to retrieve dbs');
-  const conn = await mariadb.createConnection(usersDb);
-  const rows = await conn.query(
-    `SELECT 
-      id,
-      db_name
-    FROM dbs`,
-  );
-  conn.end();
-  if (rows.length > 0) {
-    return rows;
+  const text = 'SELECT id, db_name FROM dbs';
+  const rows = await db.query(text);
+  if (!rows || rows.length === 0) {
+    throw new Error('Database error retrieving dbs');
   }
-  throw new Error('Error select dbs');
+  return rows;
 }
 
 function json2array(json) {
@@ -395,7 +390,7 @@ module.exports = {
         type, nav: '', user: req.user, error,
       });
     }
-    res.status(200).render(
+    return res.status(200).render(
       'create',
       {
         type,
